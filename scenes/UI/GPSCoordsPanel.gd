@@ -36,6 +36,7 @@ func _on_GenerateButton_pressed():
 		return
 	
 	# Get center GPS coordinate & range
+	# TODO: Verify these calculations are consistent with the words lol
 	var center_latitude = float(latText)
 	var center_longitude = float(longText)
 	var r = float(rangeText) / 2.0

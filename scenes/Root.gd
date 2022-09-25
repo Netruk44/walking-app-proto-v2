@@ -15,6 +15,14 @@ func _ready():
 #func _process(delta):
 #	pass
 
+func log(txt):
+	$UI/ConsolePanel.log(txt)
 
 func _on_GPSCoordsPanel_generate_pressed(coords):
-	$UI/GPSCoordsPanel.showError('Got GPS Coordinates: %f, %f' % [coords['n'], coords['e']])
+	self.log('Got GPS Coordinates:')
+	self.log('  N: %f' % coords['n'])
+	self.log('  S: %f' % coords['s'])
+	self.log('  E: %f' % coords['e'])
+	self.log('  W: %f' % coords['w'])
+	
+	
