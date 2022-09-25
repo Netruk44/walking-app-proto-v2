@@ -11,6 +11,7 @@ config_version=4
 [application]
 
 config/name="Walking_App_Proto"
+run/main_scene="res://scenes/Root.tscn"
 config/icon="res://icon.png"
 
 [gui]
