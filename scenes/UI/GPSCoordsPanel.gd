@@ -42,11 +42,11 @@ func _on_GenerateButton_pressed():
 	var r = float(rangeText) / 2.0
 	
 	# Get extents
-	var e = center_latitude - r
-	var w = center_latitude + r
+	var e = center_longitude + r
+	var w = center_longitude - r
 
-	var n = center_longitude - r
-	var s = center_longitude + r
+	var n = center_latitude + r
+	var s = center_latitude - r
 	
 	# OpenMaps OverPass API expects 
 	emit_signal("generate_pressed", {

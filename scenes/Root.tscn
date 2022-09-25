@@ -37,4 +37,9 @@ margin_bottom = 314.0
 [node name="OpenMapsApi" type="Node" parent="Logic"]
 script = ExtResource( 3 )
 
+[node name="HTTPRequest" type="HTTPRequest" parent="Logic/OpenMapsApi"]
+
 [connection signal="generate_pressed" from="UI/GPSCoordsPanel" to="." method="_on_GPSCoordsPanel_generate_pressed"]
+[connection signal="on_error" from="Logic/OpenMapsApi" to="." method="_on_error"]
+[connection signal="on_info" from="Logic/OpenMapsApi" to="." method="_on_info"]
+[connection signal="request_completed" from="Logic/OpenMapsApi/HTTPRequest" to="Logic/OpenMapsApi" method="_on_HTTPRequest_request_completed"]

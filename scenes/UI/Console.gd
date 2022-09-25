@@ -5,8 +5,7 @@ var lines = []
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	$ConsoleText.text = ''
-	self.lines = []
+	self.clear()
 
 func log(txt):
 	txt = txt.split('\n')
@@ -21,3 +20,7 @@ func log(txt):
 	
 	$ConsoleText.text = '\n'.join(self.lines)
 	$ConsoleText.scroll_vertical = self.lines.size()
+
+func clear():
+	$ConsoleText.text = ''
+	self.lines = []
