@@ -11,11 +11,11 @@ script = ExtResource( 1 )
 margin_left = 7.0
 margin_top = 7.0
 margin_right = 577.0
-margin_bottom = 49.0
+margin_bottom = 77.0
 
 [node name="ControlsVBox" type="VBoxContainer" parent="ContainerHBox"]
 margin_right = 495.0
-margin_bottom = 42.0
+margin_bottom = 70.0
 
 [node name="LabelsHBox" type="HBoxContainer" parent="ContainerHBox/ControlsVBox"]
 margin_right = 495.0
@@ -27,10 +27,9 @@ margin_bottom = 14.0
 text = "GPS Coordinates:"
 
 [node name="ErrorLabel" type="Label" parent="ContainerHBox/ControlsVBox/LabelsHBox"]
-visible = false
-margin_left = 150.0
-margin_right = 232.0
-margin_bottom = 26.0
+margin_left = 113.0
+margin_right = 174.0
+margin_bottom = 14.0
 custom_colors/font_color = Color( 1, 0.176471, 0.176471, 1 )
 text = "Error Text"
 
@@ -38,50 +37,67 @@ text = "Error Text"
 wait_time = 5.0
 one_shot = true
 
-[node name="TextEditHBox" type="HBoxContainer" parent="ContainerHBox/ControlsVBox"]
+[node name="CoordsEditHBox" type="HBoxContainer" parent="ContainerHBox/ControlsVBox"]
 margin_top = 18.0
 margin_right = 495.0
 margin_bottom = 42.0
 
-[node name="LatitudeHBox" type="HBoxContainer" parent="ContainerHBox/ControlsVBox/TextEditHBox"]
+[node name="LatitudeHBox" type="HBoxContainer" parent="ContainerHBox/ControlsVBox/CoordsEditHBox"]
 margin_right = 240.0
 margin_bottom = 24.0
 
-[node name="LatitudeLabel" type="Label" parent="ContainerHBox/ControlsVBox/TextEditHBox/LatitudeHBox"]
+[node name="LatitudeLabel" type="Label" parent="ContainerHBox/ControlsVBox/CoordsEditHBox/LatitudeHBox"]
 margin_top = 5.0
 margin_right = 56.0
 margin_bottom = 19.0
 text = "Latitude:"
 
-[node name="LatitudeEdit" type="LineEdit" parent="ContainerHBox/ControlsVBox/TextEditHBox/LatitudeHBox"]
+[node name="LatitudeEdit" type="LineEdit" parent="ContainerHBox/ControlsVBox/CoordsEditHBox/LatitudeHBox"]
 margin_left = 60.0
 margin_right = 240.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 180, 0 )
 text = "41.98333297801146"
 
-[node name="LongitudeHBox" type="HBoxContainer" parent="ContainerHBox/ControlsVBox/TextEditHBox"]
+[node name="LongitudeHBox" type="HBoxContainer" parent="ContainerHBox/ControlsVBox/CoordsEditHBox"]
 margin_left = 244.0
 margin_right = 495.0
 margin_bottom = 24.0
 
-[node name="LongitudeLabel" type="Label" parent="ContainerHBox/ControlsVBox/TextEditHBox/LongitudeHBox"]
+[node name="LongitudeLabel" type="Label" parent="ContainerHBox/ControlsVBox/CoordsEditHBox/LongitudeHBox"]
 margin_top = 5.0
 margin_right = 67.0
 margin_bottom = 19.0
 text = "Longitude:"
 
-[node name="LongitudeEdit" type="LineEdit" parent="ContainerHBox/ControlsVBox/TextEditHBox/LongitudeHBox"]
+[node name="LongitudeEdit" type="LineEdit" parent="ContainerHBox/ControlsVBox/CoordsEditHBox/LongitudeHBox"]
 margin_left = 71.0
 margin_right = 251.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 180, 0 )
 text = "-72.69010837777432"
 
+[node name="RangeHBox" type="HBoxContainer" parent="ContainerHBox/ControlsVBox"]
+margin_top = 46.0
+margin_right = 495.0
+margin_bottom = 70.0
+
+[node name="RangeLabel" type="Label" parent="ContainerHBox/ControlsVBox/RangeHBox"]
+margin_top = 5.0
+margin_right = 46.0
+margin_bottom = 19.0
+text = "Range: "
+
+[node name="RangeEdit" type="LineEdit" parent="ContainerHBox/ControlsVBox/RangeHBox"]
+margin_left = 50.0
+margin_right = 108.0
+margin_bottom = 24.0
+text = "0.01"
+
 [node name="GenerateButton" type="Button" parent="ContainerHBox"]
 margin_left = 499.0
 margin_right = 570.0
-margin_bottom = 42.0
+margin_bottom = 70.0
 text = "Generate"
 
 [connection signal="timeout" from="ContainerHBox/ControlsVBox/LabelsHBox/ErrorTimer" to="." method="_on_ErrorTimer_timeout"]
