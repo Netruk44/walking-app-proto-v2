@@ -37,8 +37,8 @@ margin_bottom = 314.0
 [node name="ZoomContainer" type="PanelContainer" parent="UI"]
 anchor_top = 1.0
 anchor_bottom = 1.0
-margin_top = -38.0
-margin_right = 139.0
+margin_top = -46.0
+margin_right = 173.0
 
 [node name="ZoomCheckbox" type="CheckBox" parent="UI/ZoomContainer"]
 margin_left = 7.0
@@ -59,8 +59,8 @@ script = ExtResource( 3 )
 z_index = -100
 script = ExtResource( 5 )
 mapLineColor = Color( 0.905882, 0.309804, 0.309804, 1 )
-mapLineWidth = 4.0
-mapStrokeWidth = 3.0
+mapLineWidth = 6.0
+mapStrokeWidth = 5.0
 
 [connection signal="generate_pressed" from="UI/GPSCoordsPanel" to="." method="_on_GPSCoordsPanel_generate_pressed"]
 [connection signal="on_error" from="Logic/OpenMapsApi" to="." method="_on_error"]

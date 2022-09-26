@@ -158,7 +158,7 @@ func addFromOpenMapsApi(map_data, requested_window):
 		line.width = self.mapLineWidth
 		line.begin_cap_mode = Line2D.LINE_CAP_ROUND
 		line.end_cap_mode = Line2D.LINE_CAP_ROUND
-		line.joint_mode = Line2D.LINE_JOINT_ROUND
+		line.joint_mode = Line2D.LINE_JOINT_BEVEL
 		
 		var stroke = AntialiasedLine2D.new()
 		add_child(stroke)
@@ -169,7 +169,7 @@ func addFromOpenMapsApi(map_data, requested_window):
 		stroke.width = self.mapLineWidth + self.mapStrokeWidth
 		stroke.begin_cap_mode = Line2D.LINE_CAP_ROUND
 		stroke.end_cap_mode = Line2D.LINE_CAP_ROUND
-		stroke.joint_mode = Line2D.LINE_JOINT_ROUND
+		stroke.joint_mode = Line2D.LINE_JOINT_BEVEL
 
 		var points = PoolVector2Array()
 		for i in range(src_ids.size()):
