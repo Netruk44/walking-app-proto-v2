@@ -63,6 +63,18 @@ func _on_ErrorTimer_timeout():
 func showError(text):
 	var label = $ContainerHBox/ControlsVBox/LabelsHBox/ErrorLabel
 	label.text = "ERROR: %s" % text
+	label.add_color_override("font_color", Color.red)
+	
+	if not label.visible:
+		label.show()
+	
+	var timer = $ContainerHBox/ControlsVBox/LabelsHBox/ErrorTimer
+	timer.start()
+
+func showMessage(text):
+	var label = $ContainerHBox/ControlsVBox/LabelsHBox/ErrorLabel
+	label.remove_color_override("font_color")
+	label.text = text
 	
 	if not label.visible:
 		label.show()

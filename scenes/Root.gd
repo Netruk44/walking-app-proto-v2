@@ -1,8 +1,9 @@
 extends Node
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	if not OS.is_debug_build():
+		# Don't show console for release builds.
+		$UI/ConsolePanel.hide()
 
 func log(txt):
 	$UI/ConsolePanel.log(txt)
@@ -19,6 +20,11 @@ func _on_GPSCoordsPanel_generate_pressed(coords):
 	else:
 		$Map.zoomToFit = $Map.ZoomType.Fit_All_Returned_Data
 	$Logic/OpenMapsApi.GetHighwaysInGpsRect(coords)
+	$UI/GPSCoordsPanel.showMessage("Querying for map...")
+
+func _on_OpenMapsApi_on_map_data(result_object, requested_window):
+	$UI/GPSCoordsPanel.showMessage("Successfully retrieved map!")
+	$Map.addFromOpenMapsApi(result_object, requested_window)
 
 func _on_error(txt):
 	self.log("ERROR:")
@@ -26,3 +32,4 @@ func _on_error(txt):
 
 func _on_info(txt):
 	self.log(txt)
+

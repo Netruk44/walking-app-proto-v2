@@ -27,6 +27,7 @@ theme = SubResource( 3 )
 [node name="GPSCoordsPanel" parent="UI" instance=ExtResource( 1 )]
 
 [node name="ConsolePanel" parent="UI" instance=ExtResource( 4 )]
+visible = false
 anchor_left = 1.0
 anchor_right = 1.0
 margin_left = -380.0
@@ -68,7 +69,7 @@ mapStrokeWidth = 3.0
 [connection signal="generate_pressed" from="UI/GPSCoordsPanel" to="." method="_on_GPSCoordsPanel_generate_pressed"]
 [connection signal="on_error" from="Logic/OpenMapsApi" to="." method="_on_error"]
 [connection signal="on_info" from="Logic/OpenMapsApi" to="." method="_on_info"]
-[connection signal="on_map_data" from="Logic/OpenMapsApi" to="Map" method="_on_OpenMapsApi_on_map_data"]
+[connection signal="on_map_data" from="Logic/OpenMapsApi" to="." method="_on_OpenMapsApi_on_map_data"]
 [connection signal="request_completed" from="Logic/OpenMapsApi/HTTPRequest" to="Logic/OpenMapsApi" method="_on_HTTPRequest_request_completed"]
 [connection signal="on_error" from="Map" to="." method="_on_error"]
 [connection signal="on_info" from="Map" to="." method="_on_info"]
