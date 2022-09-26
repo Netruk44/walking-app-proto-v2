@@ -15,6 +15,9 @@ func on_info(txt):
 	
 func on_error(txt):
 	emit_signal("on_error", txt)
+	
+func is_running():
+	return request_running
 
 
 func _init():

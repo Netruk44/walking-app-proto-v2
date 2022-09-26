@@ -9,6 +9,10 @@ func log(txt):
 	$UI/ConsolePanel.log(txt)
 
 func _on_GPSCoordsPanel_generate_pressed(coords):
+	if $Logic/OpenMapsApi.is_running():
+		$UI/GPSCoordsPanel.showError("Request already in progress!")
+		return
+	
 	self.log('Got GPS Coordinates:')
 	self.log('  N: %f' % coords['n'])
 	self.log('  S: %f' % coords['s'])
