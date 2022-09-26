@@ -33,6 +33,24 @@ margin_left = -380.0
 margin_right = 0.0
 margin_bottom = 314.0
 
+[node name="ZoomContainer" type="PanelContainer" parent="UI"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_top = -38.0
+margin_right = 139.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/ZoomContainer"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 166.0
+margin_bottom = 39.0
+
+[node name="ZoomCheckbox" type="CheckBox" parent="UI/ZoomContainer/HBoxContainer"]
+margin_right = 159.0
+margin_bottom = 32.0
+pressed = true
+text = "Zoom to request"
+
 [node name="Logic" type="Node" parent="."]
 
 [node name="OpenMapsApi" type="Node" parent="Logic"]

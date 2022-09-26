@@ -3,10 +3,13 @@ extends Node2D
 signal on_info
 signal on_error
 
+enum ZoomType {Fit_Request, Fit_All_Returned_Data}
+
 export var mapLineColor = Color.orange
 export var mapStrokeColor = Color.black
 export var mapLineWidth = 3.5
 export var mapStrokeWidth = 1.0
+export(ZoomType) var zoomToFit = ZoomType.Fit_Request
 
 # OpenMaps data
 var nodes = {} # "id": int64:  {"lat": float, "lon": float}
@@ -73,22 +76,28 @@ func addFromOpenMapsApi(map_data, requested_window):
 		else:
 			self.on_error('Unknown object type "%s", ignoring.' % obj['type'])
 	
-	# Calculate bounding box for nodes
 	var lat_min = 999.0
 	var lat_max = -999.0
 	var long_min = 999.0
 	var long_max = -999.0
-	for node_id in self.nodes:
-		var n = self.nodes[node_id]
-		if n['lat'] < lat_min:
-			lat_min = n['lat']
-		if n['lat'] > lat_max:
-			lat_max = n['lat']
-			
-		if n['lon'] < long_min:
-			long_min = n['lon']
-		if n['lon'] > long_max:
-			long_max = n['lon']
+	if self.zoomToFit == ZoomType.Fit_All_Returned_Data:
+		# Calculate bounding box for nodes
+		for node_id in self.nodes:
+			var n = self.nodes[node_id]
+			if n['lat'] < lat_min:
+				lat_min = n['lat']
+			if n['lat'] > lat_max:
+				lat_max = n['lat']
+				
+			if n['lon'] < long_min:
+				long_min = n['lon']
+			if n['lon'] > long_max:
+				long_max = n['lon']
+	else:
+		lat_min = requested_window['s']
+		lat_max = requested_window['n']
+		long_min = requested_window['w']
+		long_max = requested_window['e']
 	
 	var coordinates_aspect_ratio = (long_max - long_min) / (lat_max - lat_min)
 	self.on_info("Coordinates aspect ratio (%f / %f): %f" % [long_max - long_min, lat_max - lat_min, coordinates_aspect_ratio])
@@ -114,9 +123,6 @@ func addFromOpenMapsApi(map_data, requested_window):
 		var window_height = self.window_top - self.window_bottom
 		self.window_left = long_ctr - (window_aspect_ratio * window_height / 2.0)
 		self.window_right = long_ctr + (window_aspect_ratio * window_height / 2.0)
-	
-	#self.window_right = requested_window['e']
-	#self.window_left = requested_window['w']
 	
 	# Calculate node vertex position
 	for node_id in self.nodes:
