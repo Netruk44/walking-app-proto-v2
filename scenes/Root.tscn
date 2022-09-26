@@ -41,6 +41,7 @@ script = ExtResource( 3 )
 [node name="HTTPRequest" type="HTTPRequest" parent="Logic/OpenMapsApi"]
 
 [node name="Map" type="Node2D" parent="."]
+z_index = -1
 script = ExtResource( 5 )
 
 [connection signal="generate_pressed" from="UI/GPSCoordsPanel" to="." method="_on_GPSCoordsPanel_generate_pressed"]

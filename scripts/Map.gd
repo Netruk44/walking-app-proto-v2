@@ -3,6 +3,9 @@ extends Node2D
 signal on_info
 signal on_error
 
+export var mapStrokeColor = Color.orange
+export var mapStrokeWidth = 3.5
+
 # OpenMaps data
 var nodes = {} # "id": int64:  {"lat": float, "lon": float}
 var ways = {} # "id": int64: {"nodes": list<int64>}
@@ -14,7 +17,6 @@ var window_left = 999.0
 var window_right = -999.0
 
 # Precalculated drawing lines
-var line_list = PoolVector2Array()
 var requested_window_list = PoolVector2Array()
 
 func on_info(txt):
@@ -28,7 +30,6 @@ func _ready():
 	pass # Replace with function body.
 	
 func _draw():
-	draw_multiline(self.line_list, Color.red)
 	draw_multiline(self.requested_window_list, Color.green)
 	
 
@@ -43,8 +44,11 @@ func reset():
 	self.window_top = -999.0
 	self.window_left = 999.0
 	self.window_right = -999.0
-	self.line_list = PoolVector2Array()
 	self.requested_window_list = PoolVector2Array()
+	
+	# Remove all child nodes
+	for n in get_children():
+		n.queue_free()
 
 func addFromOpenMapsApi(map_data, requested_window):
 	self.reset()
@@ -117,7 +121,7 @@ func addFromOpenMapsApi(map_data, requested_window):
 		var n = self.nodes[node_id]
 		var x = (n['lon'] - self.window_left) / (self.window_right - self.window_left)
 		var y = 1.0 - (n['lat'] - self.window_bottom) / (self.window_top - self.window_bottom)
-		n['pos'] = Vector2(x, y)
+		n['pos'] = Vector2(x, y) * screen_size
 	
 	# Precalculate vertex positions for line rendering
 	for way_id in self.ways:
@@ -135,17 +139,27 @@ func addFromOpenMapsApi(map_data, requested_window):
 		src_ids = src_ids.slice(0, src_ids.size() - 2)
 		
 		assert(src_ids.size() == dst_ids.size())
+		
+		# Create line object in the scene
+		var line = AntialiasedLine2D.new()
+		add_child(line)
+		line.set_name('way %d' % way_id)
+		line.default_color = self.mapStrokeColor
+		line.width = self.mapStrokeWidth
+		line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+		line.end_cap_mode = Line2D.LINE_CAP_ROUND
+		line.joint_mode = Line2D.LINE_JOINT_ROUND
+
+		var points = PoolVector2Array()
 		for i in range(src_ids.size()):
 			var src_node = self.nodes[src_ids[i]]
 			var dst_node = self.nodes[dst_ids[i]]
-			
-			#var a = Line2D()
-			#self.line_list.append([src_node['pos'], dst_node['pos']])
-			#var screen_size = get_viewport().size
-			
-			self.line_list.push_back(src_node['pos'] * screen_size)
-			self.line_list.push_back(dst_node['pos'] * screen_size)
-	
+			points.push_back(src_node['pos'])
+			points.push_back(dst_node['pos'])
+
+		line.points = points
+
+
 	# Calculate requested window vertex positions
 	var w = (requested_window['w'] - self.window_left) / (self.window_right - self.window_left) * screen_size.x
 	var e = (requested_window['e'] - self.window_left) / (self.window_right - self.window_left) * screen_size.x
@@ -164,7 +178,6 @@ func addFromOpenMapsApi(map_data, requested_window):
 	self.requested_window_list.push_back(Vector2(e, n))
 	self.requested_window_list.push_back(Vector2(w, n))
 	update()
-	get_node('/root/Root/UI').update()
 
 func _on_OpenMapsApi_on_map_data(result_object, requested_window):
 	self.addFromOpenMapsApi(result_object, requested_window)
