@@ -185,8 +185,8 @@ func addFromOpenMapsApi(map_data, requested_window):
 	# Calculate requested window vertex positions
 	var w = (requested_window['w'] - self.window_left) / (self.window_right - self.window_left) * screen_size.x
 	var e = (requested_window['e'] - self.window_left) / (self.window_right - self.window_left) * screen_size.x
-	var n = (requested_window['n'] - self.window_bottom) / (self.window_top - self.window_bottom) * screen_size.y
-	var s = (requested_window['s'] - self.window_bottom) / (self.window_top - self.window_bottom) * screen_size.y
+	var n = (1.0 - (requested_window['n'] - self.window_bottom) / (self.window_top - self.window_bottom)) * screen_size.y
+	var s = (1.0 - (requested_window['s'] - self.window_bottom) / (self.window_top - self.window_bottom)) * screen_size.y
 	
 	self.requested_window_list.push_back(Vector2(w, n))
 	self.requested_window_list.push_back(Vector2(w, s))
