@@ -3,8 +3,10 @@ extends Node2D
 signal on_info
 signal on_error
 
-export var mapStrokeColor = Color.orange
-export var mapStrokeWidth = 3.5
+export var mapLineColor = Color.orange
+export var mapStrokeColor = Color.black
+export var mapLineWidth = 3.5
+export var mapStrokeWidth = 1.0
 
 # OpenMaps data
 var nodes = {} # "id": int64:  {"lat": float, "lon": float}
@@ -140,15 +142,28 @@ func addFromOpenMapsApi(map_data, requested_window):
 		
 		assert(src_ids.size() == dst_ids.size())
 		
-		# Create line object in the scene
+		# Create line & stroke objects in the scene
 		var line = AntialiasedLine2D.new()
 		add_child(line)
 		line.set_name('way %d' % way_id)
-		line.default_color = self.mapStrokeColor
-		line.width = self.mapStrokeWidth
+		line.z_index = -1
+		line.z_as_relative = true
+		line.default_color = self.mapLineColor
+		line.width = self.mapLineWidth
 		line.begin_cap_mode = Line2D.LINE_CAP_ROUND
 		line.end_cap_mode = Line2D.LINE_CAP_ROUND
 		line.joint_mode = Line2D.LINE_JOINT_ROUND
+		
+		var stroke = AntialiasedLine2D.new()
+		add_child(stroke)
+		stroke.set_name('way %d stroke' % way_id)
+		stroke.z_index = -2
+		stroke.z_as_relative = true
+		stroke.default_color = self.mapStrokeColor
+		stroke.width = self.mapLineWidth + self.mapStrokeWidth
+		stroke.begin_cap_mode = Line2D.LINE_CAP_ROUND
+		stroke.end_cap_mode = Line2D.LINE_CAP_ROUND
+		stroke.joint_mode = Line2D.LINE_JOINT_ROUND
 
 		var points = PoolVector2Array()
 		for i in range(src_ids.size()):
@@ -158,6 +173,7 @@ func addFromOpenMapsApi(map_data, requested_window):
 			points.push_back(dst_node['pos'])
 
 		line.points = points
+		stroke.points = points
 
 
 	# Calculate requested window vertex positions
