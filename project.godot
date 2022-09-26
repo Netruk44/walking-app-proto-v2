@@ -36,6 +36,14 @@ config/name="Walking_App_Proto"
 run/main_scene="res://scenes/Root.tscn"
 config/icon="res://icon.png"
 
+[autoload]
+
+AntialiasedLine2DTexture="*res://addons/antialiased_line2d/texture.gd"
+
+[editor_plugins]
+
+enabled=PoolStringArray( "res://addons/antialiased_line2d/plugin.cfg" )
+
 [gui]
 
 common/drop_mouse_on_gui_input_disabled=true
