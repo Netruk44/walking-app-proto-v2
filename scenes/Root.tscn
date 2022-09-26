@@ -40,15 +40,11 @@ anchor_bottom = 1.0
 margin_top = -38.0
 margin_right = 139.0
 
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/ZoomContainer"]
+[node name="ZoomCheckbox" type="CheckBox" parent="UI/ZoomContainer"]
 margin_left = 7.0
 margin_top = 7.0
 margin_right = 166.0
 margin_bottom = 39.0
-
-[node name="ZoomCheckbox" type="CheckBox" parent="UI/ZoomContainer/HBoxContainer"]
-margin_right = 159.0
-margin_bottom = 32.0
 pressed = true
 text = "Zoom to request"
 

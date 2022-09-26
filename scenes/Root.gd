@@ -15,7 +15,7 @@ func _on_GPSCoordsPanel_generate_pressed(coords):
 	self.log('  E: %f' % coords['e'])
 	self.log('  W: %f' % coords['w'])
 	
-	if $UI/ZoomContainer/HBoxContainer/ZoomCheckbox.pressed:
+	if $UI/ZoomContainer/ZoomCheckbox.pressed:
 		$Map.zoomToFit = $Map.ZoomType.Fit_Request
 	else:
 		$Map.zoomToFit = $Map.ZoomType.Fit_All_Returned_Data
