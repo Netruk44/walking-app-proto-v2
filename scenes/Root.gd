@@ -20,6 +20,5 @@ func _on_error(txt):
 	self.log("ERROR:")
 	self.log(txt)
 
-
 func _on_info(txt):
 	self.log(txt)
