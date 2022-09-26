@@ -164,6 +164,7 @@ func addFromOpenMapsApi(map_data, requested_window):
 	self.requested_window_list.push_back(Vector2(e, n))
 	self.requested_window_list.push_back(Vector2(w, n))
 	update()
+	get_node('/root/Root/UI').update()
 
 func _on_OpenMapsApi_on_map_data(result_object, requested_window):
 	self.addFromOpenMapsApi(result_object, requested_window)
