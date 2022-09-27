@@ -15,6 +15,8 @@ export(ZoomType) var zoomToFit = ZoomType.Fit_Request
 var nodes = {} # "id": int64:  {"lat": float, "lon": float}
 var ways = {} # "id": int64: {"nodes": list<int64>}
 
+var oob_size = 5.0
+
 func on_info(txt):
 	emit_signal("on_info", txt)
 	
@@ -61,59 +63,97 @@ func addFromOpenMapsApi(map_data, requested_window):
 			self.on_error('Unknown object type "%s", ignoring.' % obj['type'])
 	
 	# Calculate node world positions
-	var lat_min = 999.0
-	var lat_max = -999.0
-	var long_min = 999.0
-	var long_max = -999.0
-	if self.zoomToFit == ZoomType.Fit_All_Returned_Data:
-		# Calculate bounding box for nodes
-		for node_id in self.nodes:
-			var n = self.nodes[node_id]
-			if n['lat'] < lat_min:
-				lat_min = n['lat']
-			if n['lat'] > lat_max:
-				lat_max = n['lat']
-				
-			if n['lon'] < long_min:
-				long_min = n['lon']
-			if n['lon'] > long_max:
-				long_max = n['lon']
-	else:
-		lat_min = requested_window['s']
-		lat_max = requested_window['n']
-		long_min = requested_window['w']
-		long_max = requested_window['e']
+	var map_lat_min_s = requested_window['s']
+	var map_lat_max_n = requested_window['n']
+	var map_long_min_w = requested_window['w']
+	var map_long_max_e = requested_window['e']
 	
-	# Square off the window
-	var coordinates_aspect_ratio = (long_max - long_min) / (lat_max - lat_min)
+	# Fix up the map aspect ratio if the requested area isn't correct
+	var coordinates_aspect_ratio = (map_long_max_e - map_long_min_w) / (map_lat_max_n - map_lat_min_s)
+	var desired_aspect_ratio = 1.25
 	
-	if is_equal_approx(coordinates_aspect_ratio, 1.0):
+	if is_equal_approx(coordinates_aspect_ratio, desired_aspect_ratio):
 		pass
-	elif coordinates_aspect_ratio > 1.0:
+	elif coordinates_aspect_ratio > desired_aspect_ratio:
 		# Add to latitude
-		var lat_center = (lat_min + lat_max) / 2.0
-		var long_diff = (long_max - long_min) / 2.0
-		self.on_info("lat_max from: %f to %f" % [lat_max, lat_center + long_diff])
-		self.on_info("lat_min from: %f to %f" % [lat_min, lat_center - long_diff])
-		lat_max = lat_center + long_diff
-		lat_min = lat_center - long_diff
+		var lat_center = (map_lat_min_s + map_lat_max_n) / 2.0
+		var long_diff = (map_long_max_e - map_long_min_w) / 2.0
+		map_lat_max_n = lat_center + long_diff / desired_aspect_ratio
+		map_lat_min_s = lat_center - long_diff / desired_aspect_ratio
 	else:
 		# Add to longitude
-		var long_center = (long_min + long_max) / 2.0
-		var lat_diff = (lat_max - lat_min) / 2.0
-		self.on_info("long_max from: %f to %f" % [long_max, long_center + lat_diff])
-		self.on_info("long_min from: %f to %f" % [long_min, long_center - lat_diff])
-		long_max = long_center + lat_diff
-		long_min = long_center - lat_diff
+		var long_center = (map_long_min_w + map_long_max_e) / 2.0
+		var lat_diff = (map_lat_max_n - map_lat_min_s) / 2.0
+		map_long_max_e = long_center + lat_diff * desired_aspect_ratio
+		map_long_min_w = long_center - lat_diff * desired_aspect_ratio
 	
 	for node_id in self.nodes:
 		var n = self.nodes[node_id]
-		var x = (n['lon'] - long_min) / (long_max - long_min)
-		var y = 1.0 - (n['lat'] - lat_min) / (lat_max - lat_min)
+		var x = (n['lon'] - map_long_min_w) / (map_long_max_e - map_long_min_w)
+		var y = 1.0 - (n['lat'] - map_lat_min_s) / (map_lat_max_n - map_lat_min_s)
 		n['pos'] = Vector2(x, y)
 	
-	# Add lines
+	# Add "out of bounds" area
+	var min_points = Vector2(
+		(requested_window['w'] - map_long_min_w) / (map_long_max_e - map_long_min_w), 
+		(requested_window['s'] - map_lat_min_s) / (map_lat_max_n - map_lat_min_s))
+	var max_points = Vector2(
+		(requested_window['e'] - map_long_min_w) / (map_long_max_e - map_long_min_w), 
+		(requested_window['n'] - map_lat_min_s) / (map_lat_max_n - map_lat_min_s))
+	
+	# TODO: Precalculate instead of recreating every time.
+	
 	var scale = min(screen_size.x, screen_size.y)
+	scale *= Vector2(1.0/desired_aspect_ratio, 1.0) # Aspect ratio fix
+	
+	var oob_area = Polygon2D.new()
+	add_child(oob_area)
+	oob_area.set_name('out of bounds')
+	oob_area.z_index = 1
+	oob_area.color = Color.black
+	oob_area.color.a = 0.25
+	var oob_points = PoolVector2Array()
+	# Inner window points
+	oob_points.append(Vector2(min_points.x, min_points.y) * scale)
+	oob_points.append(Vector2(max_points.x, min_points.y) * scale)
+	oob_points.append(Vector2(max_points.x, max_points.y) * scale)
+	oob_points.append(Vector2(min_points.x, max_points.y) * scale)
+	
+	# Back to top left corner
+	oob_points.append(Vector2(min_points.x, min_points.y) * scale)
+	
+	# OOB window points, starting at top left corner
+	oob_points.append(Vector2(-oob_size, -oob_size) * scale)
+	oob_points.append(Vector2(-oob_size, max_points.y + oob_size) * scale)
+	oob_points.append(Vector2(max_points.x + oob_size, max_points.y + oob_size) * scale)
+	oob_points.append(Vector2(max_points.x + oob_size, -oob_size) * scale)
+	
+	# Back to top left corner, shape will auto-close and connect back to (0,0)
+	oob_points.append(Vector2(-oob_size, -oob_size) * scale)
+	oob_area.polygon = oob_points
+	
+	# Add out of bounds line
+	var oob_line = AntialiasedLine2D.new()
+	add_child(oob_line)
+	oob_line.set_name('out of bounds line')
+	oob_line.z_index = 2
+	oob_line.default_color = Color.black
+	oob_line.default_color.a = 0.5
+	oob_line.joint_mode = Line2D.LINE_JOINT_BEVEL
+	
+	var oob_line_points = PoolVector2Array()
+	# To bevel all 4 corners, we have to start/end mid-line
+	oob_line_points.append(Vector2((min_points.x + max_points.x) / 2.0, min_points.y) * scale)
+	
+	oob_line_points.append(Vector2(max_points.x, min_points.y) * scale)
+	oob_line_points.append(Vector2(max_points.x, max_points.y) * scale)
+	oob_line_points.append(Vector2(min_points.x, max_points.y) * scale)
+	oob_line_points.append(Vector2(min_points.x, min_points.y) * scale)
+	
+	oob_line_points.append(Vector2((min_points.x + max_points.x) / 2.0, min_points.y) * scale)
+	oob_line.points = oob_line_points
+	
+	# Add lines
 	for way_id in self.ways:
 		var w = self.ways[way_id]
 		var node_ids = w['nodes']
