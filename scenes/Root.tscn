@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=12 format=2]
 
 [ext_resource path="res://scenes/UI/GPSCoordsPanel.tscn" type="PackedScene" id=1]
 [ext_resource path="res://scenes/Root.gd" type="Script" id=2]
@@ -7,6 +7,7 @@
 [ext_resource path="res://scripts/Map.gd" type="Script" id=5]
 [ext_resource path="res://scripts/MapCamera.gd" type="Script" id=6]
 [ext_resource path="res://icons/console-white-32.svg" type="Texture" id=7]
+[ext_resource path="res://scripts/GPXPanel.gd" type="Script" id=8]
 
 [sub_resource type="DynamicFontData" id=1]
 font_path = "res://fonts/OpenSans-VariableFont_wdth,wght.ttf"
@@ -47,9 +48,57 @@ anchor_bottom = 1.0
 mouse_filter = 2
 theme = SubResource( 3 )
 
-[node name="GPSCoordsPanel" parent="UI_CanvasLayer/UI" instance=ExtResource( 1 )]
-margin_right = 626.0
-margin_bottom = 114.0
+[node name="TabContainer" type="TabContainer" parent="UI_CanvasLayer/UI"]
+margin_right = 8.0
+margin_bottom = 46.0
+tab_align = 0
+
+[node name="GPS" parent="UI_CanvasLayer/UI/TabContainer" instance=ExtResource( 1 )]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 42.0
+margin_right = -4.0
+margin_bottom = -4.0
+
+[node name="GPX" type="PanelContainer" parent="UI_CanvasLayer/UI/TabContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 42.0
+margin_right = -4.0
+margin_bottom = -4.0
+script = ExtResource( 8 )
+
+[node name="FileDialog" type="FileDialog" parent="UI_CanvasLayer/UI/TabContainer/GPX"]
+margin_right = 416.0
+margin_bottom = 194.0
+rect_min_size = Vector2( 400, 140 )
+window_title = "Open File(s)"
+resizable = true
+dialog_hide_on_ok = true
+mode = 1
+access = 2
+filters = PoolStringArray( "*.gpx" )
+
+[node name="OpenGpxButton" type="Button" parent="UI_CanvasLayer/UI/TabContainer/GPX"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 207.0
+margin_bottom = 37.0
+rect_min_size = Vector2( 200, 0 )
+text = "Open GPX file(s)"
+
+[node name="Hide" type="Control" parent="UI_CanvasLayer/UI/TabContainer"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 42.0
+margin_right = -4.0
+margin_bottom = -4.0
+rect_min_size = Vector2( 230, 0 )
 
 [node name="ConsolePanel" parent="UI_CanvasLayer/UI" instance=ExtResource( 4 )]
 anchor_top = 1.0
@@ -104,5 +153,8 @@ icon = ExtResource( 7 )
 [connection signal="request_completed" from="Logic/OpenMapsApi/HTTPRequest" to="Logic/OpenMapsApi" method="_on_HTTPRequest_request_completed"]
 [connection signal="on_error" from="Map" to="." method="_on_error"]
 [connection signal="on_info" from="Map" to="." method="_on_info"]
-[connection signal="generate_pressed" from="UI_CanvasLayer/UI/GPSCoordsPanel" to="." method="_on_GPSCoordsPanel_generate_pressed"]
+[connection signal="generate_pressed" from="UI_CanvasLayer/UI/TabContainer/GPS" to="." method="_on_GPSCoordsPanel_generate_pressed"]
+[connection signal="gpx_opened" from="UI_CanvasLayer/UI/TabContainer/GPX" to="." method="_on_GPX_gpx_opened"]
+[connection signal="files_selected" from="UI_CanvasLayer/UI/TabContainer/GPX/FileDialog" to="UI_CanvasLayer/UI/TabContainer/GPX" method="_on_FileDialog_files_selected"]
+[connection signal="pressed" from="UI_CanvasLayer/UI/TabContainer/GPX/OpenGpxButton" to="UI_CanvasLayer/UI/TabContainer/GPX" method="_on_OpenGpxButton_pressed"]
 [connection signal="toggled" from="UI_CanvasLayer/UI/ConsoleShower/HBoxContainer/ConsoleToggle" to="." method="_on_ConsoleToggle_toggled"]
