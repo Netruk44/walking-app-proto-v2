@@ -24,12 +24,15 @@ func _on_GPSCoordsPanel_generate_pressed(coords):
 	else:
 		$Map.zoomToFit = $Map.ZoomType.Fit_All_Returned_Data
 
-	$UI_CanvasLayer/UI/GPSCoordsPanel.showMessage("Querying for map...")
+	$UI_CanvasLayer/UI/GPSCoordsPanel.showPermanentMessage("Querying for map...")
 	$Logic/OpenMapsApi.GetHighwaysInGpsRect(coords)
 
 func _on_OpenMapsApi_on_map_data(result_object, requested_window):
 	$UI_CanvasLayer/UI/GPSCoordsPanel.showMessage("Successfully retrieved map!")
 	$Map.addFromOpenMapsApi(result_object, requested_window)
+
+func _on_OpenMapsApi_on_map_error(response_code, body):
+	$UI_CanvasLayer/UI/GPSCoordsPanel.showError("Request failed, status code %d." % response_code)
 
 func _on_error(txt):
 	self.log("ERROR:")
@@ -37,4 +40,3 @@ func _on_error(txt):
 
 func _on_info(txt):
 	self.log(txt)
-

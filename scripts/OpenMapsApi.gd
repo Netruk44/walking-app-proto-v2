@@ -3,6 +3,7 @@ extends Node
 signal on_info
 signal on_error
 signal on_map_data
+signal on_map_error
 
 export var overpass_api_url = "https://overpass-api.de/api/interpreter"
 var request_running = false
@@ -53,7 +54,9 @@ func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 	
 	if response_code != 200:
 		self.on_error("Response code was not 200.")
-		self.on_info("Body: %s" % body.get_string_from_utf8())
+		var body_str = body.get_string_from_utf8()
+		self.on_info("Body: %s" % body_str)
+		emit_signal("on_map_error", response_code, body_str)
 		return
 	
 	var json_parse_result = JSON.parse(body.get_string_from_utf8())
