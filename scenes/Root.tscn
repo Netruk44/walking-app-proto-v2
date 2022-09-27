@@ -33,13 +33,13 @@ current = true
 script = ExtResource( 6 )
 
 [node name="Map" type="Node2D" parent="."]
-z_index = -100
 script = ExtResource( 5 )
 mapLineColor = Color( 0.905882, 0.309804, 0.309804, 1 )
 mapLineWidth = 6.0
 mapStrokeWidth = 5.0
 
 [node name="UI_CanvasLayer" type="CanvasLayer" parent="."]
+layer = 10
 
 [node name="UI" type="Control" parent="UI_CanvasLayer"]
 anchor_right = 1.0
@@ -52,7 +52,6 @@ margin_right = 626.0
 margin_bottom = 114.0
 
 [node name="ConsolePanel" parent="UI_CanvasLayer/UI" instance=ExtResource( 4 )]
-visible = false
 anchor_left = 1.0
 anchor_right = 1.0
 margin_left = -380.0
@@ -70,6 +69,7 @@ margin_left = 7.0
 margin_top = 7.0
 margin_right = 166.0
 margin_bottom = 39.0
+pressed = true
 text = "Zoom to request"
 
 [connection signal="on_error" from="Logic/OpenMapsApi" to="." method="_on_error"]

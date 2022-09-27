@@ -15,15 +15,6 @@ export(ZoomType) var zoomToFit = ZoomType.Fit_Request
 var nodes = {} # "id": int64:  {"lat": float, "lon": float}
 var ways = {} # "id": int64: {"nodes": list<int64>}
 
-# Calculated data
-var window_bottom = 999.0
-var window_top = -999.0
-var window_left = 999.0
-var window_right = -999.0
-
-# Precalculated drawing lines
-var requested_window_list = PoolVector2Array()
-
 func on_info(txt):
 	emit_signal("on_info", txt)
 	
@@ -35,7 +26,8 @@ func _ready():
 	pass # Replace with function body.
 	
 func _draw():
-	draw_multiline(self.requested_window_list, Color.green)
+	pass
+	#draw_multiline(self.requested_window_list, Color.green)
 	
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -45,11 +37,6 @@ func _draw():
 func reset():
 	self.nodes = {}
 	self.ways = {}
-	self.window_bottom = 999.0
-	self.window_top = -999.0
-	self.window_left = 999.0
-	self.window_right = -999.0
-	self.requested_window_list = PoolVector2Array()
 	
 	# Remove all child nodes
 	for n in get_children():
@@ -59,14 +46,11 @@ func addFromOpenMapsApi(map_data, requested_window):
 	self.reset()
 	self.on_info("Got maps data containing %d object(s)." % map_data['elements'].size())
 	self.on_info("Parsing...")
-	
+
 	var screen_size = get_viewport().size
 	var window_aspect_ratio = screen_size.x / screen_size.y
 	self.on_info("Window aspect ratio (%d / %d): %f" % [screen_size.x, screen_size.y, window_aspect_ratio])
-	
-	#var coordinates_aspect_ratio = (requested_window['e'] - requested_window['w']) / (requested_window['n'] - requested_window['s'])
-	#self.on_info("Coordinates aspect ratio (%d / %d): %f" % [requested_window['e'] - requested_window['w'], requested_window['n'] - requested_window['s'], coordinates_aspect_ratio])
-	
+
 	for obj in map_data['elements']:
 		# Add the object to the appropriate dictionary, nodes or ways
 		if obj['type'] == 'node':
@@ -76,6 +60,7 @@ func addFromOpenMapsApi(map_data, requested_window):
 		else:
 			self.on_error('Unknown object type "%s", ignoring.' % obj['type'])
 	
+	# Calculate node world positions
 	var lat_min = 999.0
 	var lat_max = -999.0
 	var long_min = 999.0
@@ -99,39 +84,36 @@ func addFromOpenMapsApi(map_data, requested_window):
 		long_min = requested_window['w']
 		long_max = requested_window['e']
 	
+	# Square off the window
 	var coordinates_aspect_ratio = (long_max - long_min) / (lat_max - lat_min)
-	self.on_info("Coordinates aspect ratio (%f / %f): %f" % [long_max - long_min, lat_max - lat_min, coordinates_aspect_ratio])
 	
-	if coordinates_aspect_ratio > window_aspect_ratio:
-		self.on_info("Coordinates are wider than our window is, clamping width.")
-		# Clamp width-wise
-		self.window_left = long_min
-		self.window_right = long_max
-		
-		var lat_ctr = (requested_window['n'] + requested_window['s']) / 2.0
-		var window_width = self.window_right - self.window_left
-		self.window_top = lat_ctr + (window_width / window_aspect_ratio / 2.0)
-		self.window_bottom = lat_ctr - (window_width / window_aspect_ratio / 2.0)
+	if is_equal_approx(coordinates_aspect_ratio, 1.0):
+		pass
+	elif coordinates_aspect_ratio > 1.0:
+		# Add to latitude
+		var lat_center = (lat_min + lat_max) / 2.0
+		var long_diff = (long_max - long_min) / 2.0
+		self.on_info("lat_max from: %f to %f" % [lat_max, lat_center + long_diff])
+		self.on_info("lat_min from: %f to %f" % [lat_min, lat_center - long_diff])
+		lat_max = lat_center + long_diff
+		lat_min = lat_center - long_diff
 	else:
-		self.on_info("Coordinates are taller than our window is, clamping height.")	
-		# Clamp height-wise
-		self.window_top = lat_max
-		self.window_bottom = lat_min
-		
-		var long_ctr = (requested_window['w'] + requested_window['e']) / 2.0
-		# Calculate window_left/right by using current aspect ratio
-		var window_height = self.window_top - self.window_bottom
-		self.window_left = long_ctr - (window_aspect_ratio * window_height / 2.0)
-		self.window_right = long_ctr + (window_aspect_ratio * window_height / 2.0)
+		# Add to longitude
+		var long_center = (long_min + long_max) / 2.0
+		var lat_diff = (lat_max - lat_min) / 2.0
+		self.on_info("long_max from: %f to %f" % [long_max, long_center + lat_diff])
+		self.on_info("long_min from: %f to %f" % [long_min, long_center - lat_diff])
+		long_max = long_center + lat_diff
+		long_min = long_center - lat_diff
 	
-	# Calculate node vertex position
 	for node_id in self.nodes:
 		var n = self.nodes[node_id]
-		var x = (n['lon'] - self.window_left) / (self.window_right - self.window_left)
-		var y = 1.0 - (n['lat'] - self.window_bottom) / (self.window_top - self.window_bottom)
-		n['pos'] = Vector2(x, y) * screen_size
+		var x = (n['lon'] - long_min) / (long_max - long_min)
+		var y = 1.0 - (n['lat'] - lat_min) / (lat_max - lat_min)
+		n['pos'] = Vector2(x, y)
 	
-	# Precalculate vertex positions for line rendering
+	# Add lines
+	var scale = min(screen_size.x, screen_size.y)
 	for way_id in self.ways:
 		var w = self.ways[way_id]
 		
@@ -152,8 +134,6 @@ func addFromOpenMapsApi(map_data, requested_window):
 		var line = AntialiasedLine2D.new()
 		add_child(line)
 		line.set_name('way %d' % way_id)
-		line.z_index = -1
-		line.z_as_relative = true
 		line.default_color = self.mapLineColor
 		line.width = self.mapLineWidth
 		line.begin_cap_mode = Line2D.LINE_CAP_ROUND
@@ -163,7 +143,7 @@ func addFromOpenMapsApi(map_data, requested_window):
 		var stroke = AntialiasedLine2D.new()
 		add_child(stroke)
 		stroke.set_name('way %d stroke' % way_id)
-		stroke.z_index = -2
+		stroke.z_index = -1
 		stroke.z_as_relative = true
 		stroke.default_color = self.mapStrokeColor
 		stroke.width = self.mapLineWidth + self.mapStrokeWidth
@@ -175,31 +155,14 @@ func addFromOpenMapsApi(map_data, requested_window):
 		for i in range(src_ids.size()):
 			var src_node = self.nodes[src_ids[i]]
 			var dst_node = self.nodes[dst_ids[i]]
-			points.push_back(src_node['pos'])
-			points.push_back(dst_node['pos'])
+			points.push_back(src_node['pos'] * scale)
+			points.push_back(dst_node['pos'] * scale)
+			
+			#points.push_back(Vector2(src_node['lon'], src_node['lat']))
+			#points.push_back(Vector2(dst_node['lon'], dst_node['lat']))
 
 		line.points = points
 		stroke.points = points
-
-
-	# Calculate requested window vertex positions
-	var w = (requested_window['w'] - self.window_left) / (self.window_right - self.window_left) * screen_size.x
-	var e = (requested_window['e'] - self.window_left) / (self.window_right - self.window_left) * screen_size.x
-	var n = (1.0 - (requested_window['n'] - self.window_bottom) / (self.window_top - self.window_bottom)) * screen_size.y
-	var s = (1.0 - (requested_window['s'] - self.window_bottom) / (self.window_top - self.window_bottom)) * screen_size.y
-	
-	self.requested_window_list.push_back(Vector2(w, n))
-	self.requested_window_list.push_back(Vector2(w, s))
-	
-	self.requested_window_list.push_back(Vector2(w, s))
-	self.requested_window_list.push_back(Vector2(e, s))
-	
-	self.requested_window_list.push_back(Vector2(e, s))
-	self.requested_window_list.push_back(Vector2(e, n))
-	
-	self.requested_window_list.push_back(Vector2(e, n))
-	self.requested_window_list.push_back(Vector2(w, n))
-	update()
 
 func _on_OpenMapsApi_on_map_data(result_object, requested_window):
 	self.addFromOpenMapsApi(result_object, requested_window)
