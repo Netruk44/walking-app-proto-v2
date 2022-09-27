@@ -3,14 +3,14 @@ extends Node
 func _ready():
 	if not OS.is_debug_build():
 		# Don't show console for release builds.
-		$UI/ConsolePanel.hide()
+		$UI_CanvasLayer/UI/ConsolePanel.hide()
 
 func log(txt):
-	$UI/ConsolePanel.log(txt)
+	$UI_CanvasLayer/UI/ConsolePanel.log(txt)
 
 func _on_GPSCoordsPanel_generate_pressed(coords):
 	if $Logic/OpenMapsApi.is_running():
-		$UI/GPSCoordsPanel.showError("Request already in progress!")
+		$UI_CanvasLayer/UI/GPSCoordsPanel.showError("Request already in progress!")
 		return
 
 	self.log('Downloading map data for GPS boundaries:')
@@ -19,16 +19,16 @@ func _on_GPSCoordsPanel_generate_pressed(coords):
 	self.log('  E: %f' % coords['e'])
 	self.log('  W: %f' % coords['w'])
 
-	if $UI/ZoomContainer/ZoomCheckbox.pressed:
+	if $UI_CanvasLayer/UI/ZoomContainer/ZoomCheckbox.pressed:
 		$Map.zoomToFit = $Map.ZoomType.Fit_Request
 	else:
 		$Map.zoomToFit = $Map.ZoomType.Fit_All_Returned_Data
 
-	$UI/GPSCoordsPanel.showMessage("Querying for map...")
+	$UI_CanvasLayer/UI/GPSCoordsPanel.showMessage("Querying for map...")
 	$Logic/OpenMapsApi.GetHighwaysInGpsRect(coords)
 
 func _on_OpenMapsApi_on_map_data(result_object, requested_window):
-	$UI/GPSCoordsPanel.showMessage("Successfully retrieved map!")
+	$UI_CanvasLayer/UI/GPSCoordsPanel.showMessage("Successfully retrieved map!")
 	$Map.addFromOpenMapsApi(result_object, requested_window)
 
 func _on_error(txt):
