@@ -38,7 +38,10 @@ func _on_OpenMapsApi_on_map_error(response_code, body):
 	
 func _on_files_dropped(files: PoolStringArray, screen: int):
 	for f in files:
-		self._open_gpx(f)
+		if f.ends_with('.gpx'):
+			self._open_gpx(f)
+		else:
+			self._on_error('Cannot open dragged file %s, not a .gpx file.' % f)
 	
 func _open_gpx(file_path):
 	self._on_error("Cannot open %s, GPX loading isn't implemented yet." % file_path)
