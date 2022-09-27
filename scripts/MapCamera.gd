@@ -5,7 +5,7 @@ var dragging = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	self.offset = get_viewport().size / 2.0
 
 func _unhandled_input(event):
 	var handled = false
