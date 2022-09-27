@@ -70,7 +70,7 @@ func addFromOpenMapsApi(map_data, requested_window):
 	
 	# Fix up the map aspect ratio if the requested area isn't correct
 	var coordinates_aspect_ratio = (map_long_max_e - map_long_min_w) / (map_lat_max_n - map_lat_min_s)
-	var desired_aspect_ratio = 1.25
+	var desired_aspect_ratio = 1.15
 	
 	if is_equal_approx(coordinates_aspect_ratio, desired_aspect_ratio):
 		pass

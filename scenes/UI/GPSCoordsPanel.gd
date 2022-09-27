@@ -42,8 +42,8 @@ func _on_GenerateButton_pressed():
 	var r = float(rangeText) / 2.0
 	
 	# Get extents
-	var e = center_longitude + 1.5 * r # The world isn't square.
-	var w = center_longitude - 1.5 * r # It's wider than it is tall.
+	var e = center_longitude + 1.25 * r # The world isn't square.
+	var w = center_longitude - 1.25 * r # It's wider than it is tall.
 
 	var n = center_latitude + r
 	var s = center_latitude - r
