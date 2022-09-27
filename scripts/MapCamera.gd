@@ -11,7 +11,6 @@ func _unhandled_input(event):
 	#if event.type == InputEvent.MOUSE_BUTTON and event.buton_index == BUTTON_LEFT:
 	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT:
 		dragging = event.pressed
-		print("Handled input!")
 		self.get_tree().set_input_as_handled()
 	elif event is InputEventMouseMotion and self.dragging:
 		# Move in the opposite direction as the motion for dragging effect
