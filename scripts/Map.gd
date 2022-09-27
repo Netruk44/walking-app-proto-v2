@@ -144,16 +144,6 @@ func addFromOpenMapsApi(map_data, requested_window):
 		var points = PoolVector2Array()
 		for node_id in node_ids:
 			points.push_back(self.nodes[node_id]['pos'] * scale)
-		#points.push_back(self.nodes[src_ids[0]]['pos'] * scale)
-		
-		#for i in range(src_ids.size()):
-			#var src_node = self.nodes[src_ids[i]]
-			#var dst_node = self.nodes[dst_ids[i]]
-			#points.push_back(src_node['pos'] * scale)
-			#points.push_back(dst_node['pos'] * scale)
-			
-			#points.push_back(Vector2(src_node['lon'], src_node['lat']))
-			#points.push_back(Vector2(dst_node['lon'], dst_node['lat']))
 
 		line.points = points
 		stroke.points = points
