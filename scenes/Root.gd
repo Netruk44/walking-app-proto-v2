@@ -40,3 +40,10 @@ func _on_error(txt):
 
 func _on_info(txt):
 	self.log(txt)
+
+
+func _on_ConsoleToggle_toggled(button_pressed):
+	if button_pressed:
+		$UI_CanvasLayer/UI/ConsolePanel.show()
+	else:
+		$UI_CanvasLayer/UI/ConsolePanel.hide()

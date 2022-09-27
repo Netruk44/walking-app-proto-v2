@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://scenes/UI/GPSCoordsPanel.tscn" type="PackedScene" id=1]
 [ext_resource path="res://scenes/Root.gd" type="Script" id=2]
@@ -6,6 +6,7 @@
 [ext_resource path="res://scenes/UI/Console.tscn" type="PackedScene" id=4]
 [ext_resource path="res://scripts/Map.gd" type="Script" id=5]
 [ext_resource path="res://scripts/MapCamera.gd" type="Script" id=6]
+[ext_resource path="res://icons/console-white-32.svg" type="Texture" id=7]
 
 [sub_resource type="DynamicFontData" id=1]
 font_path = "res://fonts/OpenSans-VariableFont_wdth,wght.ttf"
@@ -51,12 +52,12 @@ margin_right = 626.0
 margin_bottom = 114.0
 
 [node name="ConsolePanel" parent="UI_CanvasLayer/UI" instance=ExtResource( 4 )]
-visible = false
-anchor_left = 1.0
+anchor_top = 1.0
 anchor_right = 1.0
-margin_left = -380.0
+anchor_bottom = 1.0
+margin_top = -146.0
 margin_right = 0.0
-margin_bottom = 314.0
+margin_bottom = 0.0
 
 [node name="ZoomContainer" type="PanelContainer" parent="UI_CanvasLayer/UI"]
 visible = false
@@ -73,6 +74,29 @@ margin_bottom = 39.0
 pressed = true
 text = "Zoom to request"
 
+[node name="ConsoleShower" type="PanelContainer" parent="UI_CanvasLayer/UI"]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -61.0
+margin_top = -28.0
+margin_right = 61.0
+margin_bottom = 26.0
+rect_scale = Vector2( 0.5, 0.5 )
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI_CanvasLayer/UI/ConsoleShower"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 115.0
+margin_bottom = 47.0
+
+[node name="ConsoleToggle" type="CheckButton" parent="UI_CanvasLayer/UI/ConsoleShower/HBoxContainer"]
+margin_right = 108.0
+margin_bottom = 40.0
+pressed = true
+icon = ExtResource( 7 )
+
 [connection signal="on_error" from="Logic/OpenMapsApi" to="." method="_on_error"]
 [connection signal="on_info" from="Logic/OpenMapsApi" to="." method="_on_info"]
 [connection signal="on_map_data" from="Logic/OpenMapsApi" to="." method="_on_OpenMapsApi_on_map_data"]
@@ -81,3 +105,4 @@ text = "Zoom to request"
 [connection signal="on_error" from="Map" to="." method="_on_error"]
 [connection signal="on_info" from="Map" to="." method="_on_info"]
 [connection signal="generate_pressed" from="UI_CanvasLayer/UI/GPSCoordsPanel" to="." method="_on_GPSCoordsPanel_generate_pressed"]
+[connection signal="toggled" from="UI_CanvasLayer/UI/ConsoleShower/HBoxContainer/ConsoleToggle" to="." method="_on_ConsoleToggle_toggled"]
