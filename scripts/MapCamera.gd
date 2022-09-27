@@ -1,11 +1,14 @@
 extends Camera2D
 
+export var pan_gesture_scale = 10.0
 var dragging = false
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	self.offset = get_viewport().size / 2.0
+	#self.offset = get_viewport().size / 2.0
+	var off = get_viewport().size.y / 2.0
+	self.offset = Vector2(off, off)
 
 func _unhandled_input(event):
 	var handled = false
@@ -24,7 +27,14 @@ func _unhandled_input(event):
 		handled = true
 	# Touch pad scroll - zoom
 	elif event is InputEventPanGesture:
-		self.zoom *= (1.0 + event.delta.y)
+		#self.zoom *= (1.0 + event.delta.y)
+		self.offset += event.delta * self.zoom * self.pan_gesture_scale
+	elif event is InputEventMagnifyGesture:
+		# Gesture is negative than what you expect.
+		# 0.95 - Zoom in | 1.05 - Zoom out
+		var factor = event.factor
+		factor = 1.0 + (1.0 - factor)
+		self.zoom *= (factor * factor)
 	# Mouse moved - drag
 	elif event is InputEventMouseMotion and self.dragging:
 		# Move in the opposite direction as the motion for dragging effect
