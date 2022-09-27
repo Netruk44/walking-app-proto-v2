@@ -35,7 +35,7 @@ script = ExtResource( 6 )
 script = ExtResource( 5 )
 mapLineColor = Color( 0.905882, 0.309804, 0.309804, 1 )
 mapLineWidth = 6.0
-mapStrokeWidth = 5.0
+mapStrokeWidth = 3.0
 
 [node name="UI_CanvasLayer" type="CanvasLayer" parent="."]
 layer = 10

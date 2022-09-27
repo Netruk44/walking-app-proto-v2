@@ -116,19 +116,7 @@ func addFromOpenMapsApi(map_data, requested_window):
 	var scale = min(screen_size.x, screen_size.y)
 	for way_id in self.ways:
 		var w = self.ways[way_id]
-		
-		# Generate the line list for the way
-		var src_ids = w['nodes']
-		
-		# To create the destination node ids, shift right by one.
-		var dst_ids = src_ids.slice(1, src_ids.size() - 1)
-		
-		# Last element of src_ids doesn't connect to anything, it ends the way.
-		# (The last element *may* be the same as the first, but it also may not be.)
-		# Slice the last element off to make the arrays the same length
-		src_ids = src_ids.slice(0, src_ids.size() - 2)
-		
-		assert(src_ids.size() == dst_ids.size())
+		var node_ids = w['nodes']
 		
 		# Create line & stroke objects in the scene
 		var line = AntialiasedLine2D.new()
@@ -139,6 +127,7 @@ func addFromOpenMapsApi(map_data, requested_window):
 		line.begin_cap_mode = Line2D.LINE_CAP_ROUND
 		line.end_cap_mode = Line2D.LINE_CAP_ROUND
 		line.joint_mode = Line2D.LINE_JOINT_BEVEL
+		line.round_precision = 4
 		
 		var stroke = AntialiasedLine2D.new()
 		add_child(stroke)
@@ -149,14 +138,19 @@ func addFromOpenMapsApi(map_data, requested_window):
 		stroke.width = self.mapLineWidth + self.mapStrokeWidth
 		stroke.begin_cap_mode = Line2D.LINE_CAP_ROUND
 		stroke.end_cap_mode = Line2D.LINE_CAP_ROUND
-		stroke.joint_mode = Line2D.LINE_JOINT_BEVEL
+		stroke.joint_mode = Line2D.LINE_JOINT_SHARP
+		stroke.round_precision = 4
 
 		var points = PoolVector2Array()
-		for i in range(src_ids.size()):
-			var src_node = self.nodes[src_ids[i]]
-			var dst_node = self.nodes[dst_ids[i]]
-			points.push_back(src_node['pos'] * scale)
-			points.push_back(dst_node['pos'] * scale)
+		for node_id in node_ids:
+			points.push_back(self.nodes[node_id]['pos'] * scale)
+		#points.push_back(self.nodes[src_ids[0]]['pos'] * scale)
+		
+		#for i in range(src_ids.size()):
+			#var src_node = self.nodes[src_ids[i]]
+			#var dst_node = self.nodes[dst_ids[i]]
+			#points.push_back(src_node['pos'] * scale)
+			#points.push_back(dst_node['pos'] * scale)
 			
 			#points.push_back(Vector2(src_node['lon'], src_node['lat']))
 			#points.push_back(Vector2(dst_node['lon'], dst_node['lat']))
