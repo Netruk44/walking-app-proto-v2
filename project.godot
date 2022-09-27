@@ -32,9 +32,9 @@ _global_script_class_icons={
 
 [application]
 
-config/name="Walking_App_Proto"
+config/name="Walking App (Prototype)"
 run/main_scene="res://scenes/Root.tscn"
-config/icon="res://icon.png"
+config/icon="res://icons/icon.svg"
 
 [autoload]
 
