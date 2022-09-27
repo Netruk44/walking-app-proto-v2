@@ -49,12 +49,10 @@ mouse_filter = 2
 theme = SubResource( 3 )
 
 [node name="TabContainer" type="TabContainer" parent="UI_CanvasLayer/UI"]
-margin_right = 8.0
-margin_bottom = 46.0
+rect_min_size = Vector2( 300, 0 )
 tab_align = 0
 
 [node name="GPS" parent="UI_CanvasLayer/UI/TabContainer" instance=ExtResource( 1 )]
-visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 4.0
@@ -63,6 +61,7 @@ margin_right = -4.0
 margin_bottom = -4.0
 
 [node name="GPX" type="PanelContainer" parent="UI_CanvasLayer/UI/TabContainer"]
+visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 4.0
@@ -85,7 +84,7 @@ filters = PoolStringArray( "*.gpx" )
 [node name="OpenGpxButton" type="Button" parent="UI_CanvasLayer/UI/TabContainer/GPX"]
 margin_left = 7.0
 margin_top = 7.0
-margin_right = 207.0
+margin_right = 285.0
 margin_bottom = 37.0
 rect_min_size = Vector2( 200, 0 )
 text = "Open GPX file(s)"
@@ -98,7 +97,6 @@ margin_left = 4.0
 margin_top = 42.0
 margin_right = -4.0
 margin_bottom = -4.0
-rect_min_size = Vector2( 230, 0 )
 
 [node name="ConsolePanel" parent="UI_CanvasLayer/UI" instance=ExtResource( 4 )]
 anchor_top = 1.0
