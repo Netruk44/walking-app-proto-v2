@@ -28,7 +28,6 @@ script = ExtResource( 3 )
 [node name="HTTPRequest" type="HTTPRequest" parent="Logic/OpenMapsApi"]
 
 [node name="MapCamera" type="Camera2D" parent="."]
-anchor_mode = 0
 current = true
 script = ExtResource( 6 )
 
@@ -52,6 +51,7 @@ margin_right = 626.0
 margin_bottom = 114.0
 
 [node name="ConsolePanel" parent="UI_CanvasLayer/UI" instance=ExtResource( 4 )]
+visible = false
 anchor_left = 1.0
 anchor_right = 1.0
 margin_left = -380.0

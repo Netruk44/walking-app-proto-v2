@@ -8,13 +8,30 @@ func _ready():
 	pass # Replace with function body.
 
 func _unhandled_input(event):
-	#if event.type == InputEvent.MOUSE_BUTTON and event.buton_index == BUTTON_LEFT:
+	var handled = false
+	
+	# Left click - drag
 	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT:
 		dragging = event.pressed
-		self.get_tree().set_input_as_handled()
+		handled = true
+	# Mouse wheel up - zoom in
+	elif event is InputEventMouseButton and event.button_index == BUTTON_WHEEL_UP:
+		self.zoom *= 1.1
+		handled = true
+	# Mouse wheel down - zoom out
+	elif event is InputEventMouseButton and event.button_index == BUTTON_WHEEL_DOWN:
+		self.zoom *= 0.9
+		handled = true
+	# Touch pad scroll - zoom
+	elif event is InputEventPanGesture:
+		self.zoom *= (1.0 + event.delta.y)
+	# Mouse moved - drag
 	elif event is InputEventMouseMotion and self.dragging:
 		# Move in the opposite direction as the motion for dragging effect
-		self.offset -= event.relative
+		self.offset -= event.relative * self.zoom
+		handled = true
+	
+	if handled:
 		self.get_tree().set_input_as_handled()
 		
 	# TODO: Touch screen dragging
