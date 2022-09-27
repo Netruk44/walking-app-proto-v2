@@ -7,11 +7,6 @@ func _ready():
 	# Never show error label on startup, even if viewing it in the editor.
 	$ContainerHBox/ControlsVBox/LabelsHBox/ErrorLabel.hide()
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
-
 func _on_GenerateButton_pressed():
 	# Check for unexpected characters
 	var regex = RegEx.new()
@@ -36,7 +31,6 @@ func _on_GenerateButton_pressed():
 		return
 
 	# Get center GPS coordinate & range
-	# TODO: Verify these calculations are consistent with the words lol
 	var center_latitude = float(latText)
 	var center_longitude = float(longText)
 	var r = float(rangeText) / 2.0
@@ -58,7 +52,6 @@ func _on_GenerateButton_pressed():
 
 func _on_ErrorTimer_timeout():
 	$ContainerHBox/ControlsVBox/LabelsHBox/ErrorLabel.hide()
-
 
 func showError(text):
 	var label = $ContainerHBox/ControlsVBox/LabelsHBox/ErrorLabel
