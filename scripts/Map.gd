@@ -9,6 +9,7 @@ export var mapLineColor = Color.orange
 export var mapStrokeColor = Color.black
 export var mapLineWidth = 3.5
 export var mapStrokeWidth = 1.0
+export var mapAspectRatio = 1.0
 export(ZoomType) var zoomToFit = ZoomType.Fit_Request
 
 # OpenMaps data
@@ -70,22 +71,21 @@ func addFromOpenMapsApi(map_data, requested_window):
 	
 	# Fix up the map aspect ratio if the requested area isn't correct
 	var coordinates_aspect_ratio = (map_long_max_e - map_long_min_w) / (map_lat_max_n - map_lat_min_s)
-	var desired_aspect_ratio = 1.15
 	
-	if is_equal_approx(coordinates_aspect_ratio, desired_aspect_ratio):
+	if is_equal_approx(coordinates_aspect_ratio, mapAspectRatio):
 		pass
-	elif coordinates_aspect_ratio > desired_aspect_ratio:
-		# Add to latitude
+	elif coordinates_aspect_ratio > mapAspectRatio:
+		# Add to latitude/horizontal
 		var lat_center = (map_lat_min_s + map_lat_max_n) / 2.0
 		var long_diff = (map_long_max_e - map_long_min_w) / 2.0
-		map_lat_max_n = lat_center + long_diff / desired_aspect_ratio
-		map_lat_min_s = lat_center - long_diff / desired_aspect_ratio
+		map_lat_max_n = lat_center + long_diff / mapAspectRatio
+		map_lat_min_s = lat_center - long_diff / mapAspectRatio
 	else:
-		# Add to longitude
+		# Add to longitude/vertical
 		var long_center = (map_long_min_w + map_long_max_e) / 2.0
 		var lat_diff = (map_lat_max_n - map_lat_min_s) / 2.0
-		map_long_max_e = long_center + lat_diff * desired_aspect_ratio
-		map_long_min_w = long_center - lat_diff * desired_aspect_ratio
+		map_long_max_e = long_center + lat_diff * mapAspectRatio
+		map_long_min_w = long_center - lat_diff * mapAspectRatio
 	
 	for node_id in self.nodes:
 		var n = self.nodes[node_id]
@@ -104,7 +104,11 @@ func addFromOpenMapsApi(map_data, requested_window):
 	# TODO: Precalculate instead of recreating every time.
 	
 	var scale = min(screen_size.x, screen_size.y)
-	scale *= Vector2(1.0/desired_aspect_ratio, 1.0) # Aspect ratio fix
+	
+	# Raw GPS coordinates need to be scaled if they're appearing on a map
+	# or else the aspect ratio looks wrong due to the fact that 1 degree latitude
+	# is not the same distance as 1 degree longitude.
+	scale *= Vector2(1.0/1.25, 1.0) # Experimentally arrived at, probably not correct
 	
 	var oob_area = Polygon2D.new()
 	add_child(oob_area)
