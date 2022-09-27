@@ -7,7 +7,6 @@ signal on_map_data
 export var overpass_api_url = "https://overpass-api.de/api/interpreter"
 var request_running = false
 var request_coords = null
-#var current_closure = null
 
 
 func on_info(txt):
@@ -19,11 +18,9 @@ func on_error(txt):
 func is_running():
 	return request_running
 
-
 func _init():
 	self.request_running = false;
 	self.request_coords = null;
-	#self.current_closure = null;
 
 func GetHighwaysInGpsRect(rect):
 	if self.request_running:
@@ -47,13 +44,17 @@ func GetHighwaysInGpsRect(rect):
 	self.on_info("Sending request to: %s" % query_url)
 	self.request_running = true
 	self.request_coords = rect
-	#self.current_closure = closure
 	$HTTPRequest.request(query_url)
 
 func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 	self.on_info("Result: %s" % result)
 	self.on_info("Response Code: %s" % response_code)
 	self.request_running = false
+	
+	if response_code != 200:
+		self.on_error("Response code was not 200.")
+		self.on_info("Body: %s" % body.get_string_from_utf8())
+		return
 	
 	var json_parse_result = JSON.parse(body.get_string_from_utf8())
 	
@@ -63,7 +64,3 @@ func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 		emit_signal("on_map_data", json_parse_result.result, self.request_coords)
 	
 	self.request_coords = null
-		
-	#assert(self.current_closure != null)
-	#self.current_closure(result_object)
-	#self.current_closure = null
