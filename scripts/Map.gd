@@ -3,6 +3,8 @@ extends Node2D
 signal on_info
 signal on_error
 
+const gpx_label = "gpx segment"
+
 enum ZoomType {Fit_Request, Fit_All_Returned_Data}
 
 export var mapLineColor = Color.orange
@@ -12,6 +14,7 @@ export var mapStrokeWidth = 1.0
 export var mapAspectRatio = 1.0
 export(ZoomType) var zoomToFit = ZoomType.Fit_Request # TODO: Remove
 export var oob_size = 5.0
+export var renderSegmentGpsPositions = false setget setRenderSegmentGpsPositions
 
 # OpenMaps data
 var nodes = {} # id: int64 -> {"lat": float, "lon": float, "id": int64}
@@ -204,16 +207,18 @@ func add_traversed_segment(segment: PoolVector2Array):
 	self.traversed_segments.push_back(segment)
 	
 	var segment_root = Node.new()
-	segment_root.set_name('gpx segment %d' % self.traversed_segments.size())
+	segment_root.set_name('%s %d' % [self.gpx_label, self.traversed_segments.size()])
 	self.add_child(segment_root)
 
 	for p in segment:
 		var polygon = AntialiasedRegularPolygon2D.new()
 		segment_root.add_child(polygon)
 		polygon.z_index = 1
-		polygon.size = Vector2(1.0, 1.0)
+		polygon.size = Vector2(3.0, 3.0)
 		polygon.sides = 5
-		polygon.stroke_width = 0.2
+		polygon.stroke_width = 0.0
+		polygon.visible = self.renderSegmentGpsPositions
+		polygon.color = Color.cornflower
 
 		# Calculate local x/y
 		var local_position = Vector2(p)
@@ -225,3 +230,12 @@ func add_traversed_segment(segment: PoolVector2Array):
 
 func _on_OpenMapsApi_on_map_data(result_object, requested_window):
 	self.createNewFromOpenMapsApi(result_object, requested_window)
+	
+func setRenderSegmentGpsPositions(val):
+	self.on_info("Setting Render Segment GPS Positions to %s" % str(val))
+	renderSegmentGpsPositions = val
+	
+	for c in get_children():
+		if c.name.begins_with(self.gpx_label):
+			for c2 in c.get_children():
+				c2.visible = val

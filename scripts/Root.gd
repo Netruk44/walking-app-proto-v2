@@ -55,14 +55,15 @@ func _on_error(txt):
 func _on_info(txt):
 	self.log(txt)
 
-
 func _on_ConsoleToggle_toggled(button_pressed):
 	if button_pressed:
 		$UI_CanvasLayer/UI/ConsolePanel.show()
 	else:
 		$UI_CanvasLayer/UI/ConsolePanel.hide()
 
-
 func _on_GPX_gpx_opened(files):
 	for f in files:
 		self._open_gpx(f)
+
+func _on_GPX_render_gps_toggled(state):
+	$Map.renderSegmentGpsPositions = state

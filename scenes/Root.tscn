@@ -86,13 +86,23 @@ mode = 1
 access = 2
 filters = PoolStringArray( "*.gpx" )
 
-[node name="OpenGpxButton" type="Button" parent="UI_CanvasLayer/UI/TabContainer/GPX"]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI_CanvasLayer/UI/TabContainer/GPX"]
 margin_left = 7.0
 margin_top = 7.0
 margin_right = 285.0
-margin_bottom = 37.0
+margin_bottom = 73.0
+
+[node name="OpenGpxButton" type="Button" parent="UI_CanvasLayer/UI/TabContainer/GPX/VBoxContainer"]
+margin_right = 278.0
+margin_bottom = 30.0
 rect_min_size = Vector2( 200, 0 )
 text = "Open GPX file(s)"
+
+[node name="RenderPositions" type="CheckBox" parent="UI_CanvasLayer/UI/TabContainer/GPX/VBoxContainer"]
+margin_top = 34.0
+margin_right = 278.0
+margin_bottom = 66.0
+text = "Render GPS positions from GPX"
 
 [node name="Map" type="PanelContainer" parent="UI_CanvasLayer/UI/TabContainer"]
 visible = false
@@ -192,6 +202,8 @@ icon = ExtResource( 7 )
 [connection signal="on_info" from="Map" to="." method="_on_info"]
 [connection signal="generate_pressed" from="UI_CanvasLayer/UI/TabContainer/GPS" to="." method="_on_GPSCoordsPanel_generate_pressed"]
 [connection signal="gpx_opened" from="UI_CanvasLayer/UI/TabContainer/GPX" to="." method="_on_GPX_gpx_opened"]
+[connection signal="render_gps_toggled" from="UI_CanvasLayer/UI/TabContainer/GPX" to="." method="_on_GPX_render_gps_toggled"]
 [connection signal="files_selected" from="UI_CanvasLayer/UI/TabContainer/GPX/FileDialog" to="UI_CanvasLayer/UI/TabContainer/GPX" method="_on_FileDialog_files_selected"]
-[connection signal="pressed" from="UI_CanvasLayer/UI/TabContainer/GPX/OpenGpxButton" to="UI_CanvasLayer/UI/TabContainer/GPX" method="_on_OpenGpxButton_pressed"]
+[connection signal="pressed" from="UI_CanvasLayer/UI/TabContainer/GPX/VBoxContainer/OpenGpxButton" to="UI_CanvasLayer/UI/TabContainer/GPX" method="_on_OpenGpxButton_pressed"]
+[connection signal="toggled" from="UI_CanvasLayer/UI/TabContainer/GPX/VBoxContainer/RenderPositions" to="UI_CanvasLayer/UI/TabContainer/GPX" method="_on_RenderPositions_toggled"]
 [connection signal="toggled" from="UI_CanvasLayer/UI/ConsoleShower/HBoxContainer/ConsoleToggle" to="." method="_on_ConsoleToggle_toggled"]
