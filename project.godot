@@ -34,7 +34,7 @@ _global_script_class_icons={
 
 config/name="Walking App (Prototype)"
 run/main_scene="res://scenes/Root.tscn"
-config/icon="res://icons/icon.svg"
+config/icon="res://icons/processed_ai_icon.png"
 
 [autoload]
 
