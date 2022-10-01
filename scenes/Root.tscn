@@ -1,13 +1,14 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://scenes/UI/GPSCoordsPanel.tscn" type="PackedScene" id=1]
 [ext_resource path="res://scripts/Root.gd" type="Script" id=2]
-[ext_resource path="res://scripts/OpenMapsApi.gd" type="Script" id=3]
+[ext_resource path="res://scripts/Logic/OpenMapsApi.gd" type="Script" id=3]
 [ext_resource path="res://scenes/UI/Console.tscn" type="PackedScene" id=4]
 [ext_resource path="res://scripts/Map.gd" type="Script" id=5]
 [ext_resource path="res://scripts/MapCamera.gd" type="Script" id=6]
 [ext_resource path="res://icons/console-white-32.svg" type="Texture" id=7]
 [ext_resource path="res://scripts/UI/GPXPanel.gd" type="Script" id=8]
+[ext_resource path="res://scripts/Logic/GPXParser.gd" type="Script" id=9]
 
 [sub_resource type="DynamicFontData" id=1]
 font_path = "res://fonts/OpenSans-VariableFont_wdth,wght.ttf"
@@ -29,6 +30,9 @@ script = ExtResource( 3 )
 overpass_api_url = "http://overpass.danieltperry.me/api/interpreter"
 
 [node name="HTTPRequest" type="HTTPRequest" parent="Logic/OpenMapsApi"]
+
+[node name="GPXParser" type="Node" parent="Logic"]
+script = ExtResource( 9 )
 
 [node name="MapCamera" type="Camera2D" parent="."]
 current = true

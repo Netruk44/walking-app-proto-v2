@@ -10,13 +10,15 @@ export var mapStrokeColor = Color.black
 export var mapLineWidth = 3.5
 export var mapStrokeWidth = 1.0
 export var mapAspectRatio = 1.0
-export(ZoomType) var zoomToFit = ZoomType.Fit_Request
+export(ZoomType) var zoomToFit = ZoomType.Fit_Request # TODO: Remove
+export var oob_size = 5.0
 
 # OpenMaps data
-var nodes = {} # "id": int64:  {"lat": float, "lon": float}
-var ways = {} # "id": int64: {"nodes": list<int64>}
+var nodes = {} # id: int64 -> {"lat": float, "lon": float, "id": int64}
+var ways = {} # id: int64 -> {"nodes": list<int64>}
 
-var oob_size = 5.0
+var gps_min: Vector2
+var gps_max: Vector2
 
 func on_info(txt):
 	emit_signal("on_info", txt)
@@ -27,10 +29,6 @@ func on_error(txt):
 
 func _ready():
 	pass # Replace with function body.
-	
-func _draw():
-	pass
-	#draw_multiline(self.requested_window_list, Color.green)
 	
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -45,14 +43,18 @@ func reset():
 	for n in get_children():
 		n.queue_free()
 
-func addFromOpenMapsApi(map_data, requested_window):
+func createNewFromOpenMapsApi(map_data, requested_window):
 	self.reset()
 	self.on_info("Got maps data containing %d object(s)." % map_data['elements'].size())
 	self.on_info("Parsing...")
 
 	var screen_size = get_viewport().size
-	var window_aspect_ratio = screen_size.x / screen_size.y
-	self.on_info("Window aspect ratio (%d / %d): %f" % [screen_size.x, screen_size.y, window_aspect_ratio])
+	var scale = min(screen_size.x, screen_size.y)
+	
+	# Raw GPS coordinates need to be scaled if they're appearing on a map
+	# or else the aspect ratio looks wrong due to the fact that 1 degree latitude
+	# is not the same distance as 1 degree longitude.
+	scale *= Vector2(1.0/1.25, 1.0) # Experimentally arrived at, probably not correct
 
 	for obj in map_data['elements']:
 		# Add the object to the appropriate dictionary, nodes or ways
@@ -87,28 +89,26 @@ func addFromOpenMapsApi(map_data, requested_window):
 		map_long_max_e = long_center + lat_diff * mapAspectRatio
 		map_long_min_w = long_center - lat_diff * mapAspectRatio
 	
+	# Save min/max values
+	self.gps_min = Vector2(map_long_min_w, map_lat_min_s)
+	self.gps_max = Vector2(map_long_max_e, map_lat_max_n)
+	
+	# Calculate node local x/y
+	var local_node_pos = {}
+	
 	for node_id in self.nodes:
 		var n = self.nodes[node_id]
 		var x = (n['lon'] - map_long_min_w) / (map_long_max_e - map_long_min_w)
 		var y = 1.0 - (n['lat'] - map_lat_min_s) / (map_lat_max_n - map_lat_min_s)
-		n['pos'] = Vector2(x, y)
+		local_node_pos[node_id] = Vector2(x, y)
 	
-	# Add "out of bounds" area
+	# Calculate "out of bounds" area local x/y
 	var min_points = Vector2(
 		(requested_window['w'] - map_long_min_w) / (map_long_max_e - map_long_min_w), 
 		(requested_window['s'] - map_lat_min_s) / (map_lat_max_n - map_lat_min_s))
 	var max_points = Vector2(
 		(requested_window['e'] - map_long_min_w) / (map_long_max_e - map_long_min_w), 
 		(requested_window['n'] - map_lat_min_s) / (map_lat_max_n - map_lat_min_s))
-	
-	# TODO: Precalculate instead of recreating every time.
-	
-	var scale = min(screen_size.x, screen_size.y)
-	
-	# Raw GPS coordinates need to be scaled if they're appearing on a map
-	# or else the aspect ratio looks wrong due to the fact that 1 degree latitude
-	# is not the same distance as 1 degree longitude.
-	scale *= Vector2(1.0/1.25, 1.0) # Experimentally arrived at, probably not correct
 	
 	var oob_area = Polygon2D.new()
 	add_child(oob_area)
@@ -187,10 +187,17 @@ func addFromOpenMapsApi(map_data, requested_window):
 
 		var points = PoolVector2Array()
 		for node_id in node_ids:
-			points.push_back(self.nodes[node_id]['pos'] * scale)
+			var pos = local_node_pos[node_id]
+			points.push_back(pos * scale)
 
 		line.points = points
 		stroke.points = points
 
+#func add_many_traversed_paths(paths: [PoolVector2Array]): # GDScript 2.0,  Godot 4.0
+# Also probably not needed.
+
+func add_traversed_paths(paths: PoolVector2Array):
+	pass
+
 func _on_OpenMapsApi_on_map_data(result_object, requested_window):
-	self.addFromOpenMapsApi(result_object, requested_window)
+	self.createNewFromOpenMapsApi(result_object, requested_window)

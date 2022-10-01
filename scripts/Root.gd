@@ -31,7 +31,7 @@ func _on_GPSCoordsPanel_generate_pressed(coords):
 
 func _on_OpenMapsApi_on_map_data(result_object, requested_window):
 	$UI_CanvasLayer/UI/TabContainer/GPS.showMessage("Successfully retrieved map!")
-	$Map.addFromOpenMapsApi(result_object, requested_window)
+	$Map.createNewFromOpenMapsApi(result_object, requested_window)
 
 func _on_OpenMapsApi_on_map_error(response_code, body):
 	$UI_CanvasLayer/UI/TabContainer/GPS.showError("Request failed, status code %d." % response_code)
@@ -44,7 +44,7 @@ func _on_files_dropped(files: PoolStringArray, screen: int):
 			self._on_error('Cannot open dragged file %s, not a .gpx file.' % f)
 	
 func _open_gpx(file_path):
-	self._on_error("Cannot open %s, GPX loading isn't implemented yet." % file_path)
+	$Map.add_traversed_paths($Logic/GpxParser.GetGpsSegmentsFromGpxFile(file_path))
 
 func _on_error(txt):
 	self.log("ERROR:")
