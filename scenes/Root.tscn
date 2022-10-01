@@ -154,6 +154,8 @@ icon = ExtResource( 7 )
 [connection signal="on_map_data" from="Logic/OpenMapsApi" to="." method="_on_OpenMapsApi_on_map_data"]
 [connection signal="on_map_error" from="Logic/OpenMapsApi" to="." method="_on_OpenMapsApi_on_map_error"]
 [connection signal="request_completed" from="Logic/OpenMapsApi/HTTPRequest" to="Logic/OpenMapsApi" method="_on_HTTPRequest_request_completed"]
+[connection signal="error" from="Logic/GPXParser" to="." method="_on_error"]
+[connection signal="info" from="Logic/GPXParser" to="." method="_on_info"]
 [connection signal="on_error" from="Map" to="." method="_on_error"]
 [connection signal="on_info" from="Map" to="." method="_on_info"]
 [connection signal="generate_pressed" from="UI_CanvasLayer/UI/TabContainer/GPS" to="." method="_on_GPSCoordsPanel_generate_pressed"]
