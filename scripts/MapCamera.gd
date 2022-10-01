@@ -8,7 +8,7 @@ var dragging = false
 func _ready():
 	#self.offset = get_viewport().size / 2.0
 	var off = get_viewport().size.y / 2.0
-	self.offset = Vector2(off, off)
+	self.offset = Vector2(off, -off)
 
 func _unhandled_input(event):
 	var handled = false

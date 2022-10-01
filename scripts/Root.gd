@@ -44,7 +44,9 @@ func _on_files_dropped(files: PoolStringArray, screen: int):
 			self._on_error('Cannot open dragged file %s, not a .gpx file.' % f)
 	
 func _open_gpx(file_path):
-	$Map.add_traversed_paths($Logic/GPXParser.GetGpsSegmentsFromGpxFile(file_path))
+	var segments = $Logic/GPXParser.GetGpsSegmentsFromGpxFile(file_path)
+	for s in segments:
+		$Map.add_traversed_segment(s)
 
 func _on_error(txt):
 	self.log("ERROR:")

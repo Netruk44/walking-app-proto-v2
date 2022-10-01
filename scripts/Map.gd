@@ -17,8 +17,10 @@ export var oob_size = 5.0
 var nodes = {} # id: int64 -> {"lat": float, "lon": float, "id": int64}
 var ways = {} # id: int64 -> {"nodes": list<int64>}
 
+var map_scale: Vector2
 var gps_min: Vector2
 var gps_max: Vector2
+var traversed_segments = []
 
 func on_info(txt):
 	emit_signal("on_info", txt)
@@ -38,6 +40,7 @@ func _ready():
 func reset():
 	self.nodes = {}
 	self.ways = {}
+	self.traversed_segments = []
 	
 	# Remove all child nodes
 	for n in get_children():
@@ -49,12 +52,16 @@ func createNewFromOpenMapsApi(map_data, requested_window):
 	self.on_info("Parsing...")
 
 	var screen_size = get_viewport().size
-	var scale = min(screen_size.x, screen_size.y)
+	var min_side = min(screen_size.x, screen_size.y)
+	self.map_scale = Vector2(min_side, min_side)
 	
 	# Raw GPS coordinates need to be scaled if they're appearing on a map
 	# or else the aspect ratio looks wrong due to the fact that 1 degree latitude
 	# is not the same distance as 1 degree longitude.
-	scale *= Vector2(1.0/1.25, 1.0) # Experimentally arrived at, probably not correct
+	map_scale *= Vector2(1.0/1.25, 1.0) # Experimentally arrived at, probably not correct
+
+	# GPS is y+ upward | Godot is y+ downward
+	map_scale.y *= -1.0
 
 	for obj in map_data['elements']:
 		# Add the object to the appropriate dictionary, nodes or ways
@@ -64,13 +71,13 @@ func createNewFromOpenMapsApi(map_data, requested_window):
 			self.ways[obj['id']] = obj
 		else:
 			self.on_error('Unknown object type "%s", ignoring.' % obj['type'])
-	
+
 	# Calculate node world positions
 	var map_lat_min_s = requested_window['s']
 	var map_lat_max_n = requested_window['n']
 	var map_long_min_w = requested_window['w']
 	var map_long_max_e = requested_window['e']
-	
+
 	# Fix up the map aspect ratio if the requested area isn't correct
 	var coordinates_aspect_ratio = (map_long_max_e - map_long_min_w) / (map_lat_max_n - map_lat_min_s)
 	
@@ -92,24 +99,21 @@ func createNewFromOpenMapsApi(map_data, requested_window):
 	# Save min/max values
 	self.gps_min = Vector2(map_long_min_w, map_lat_min_s)
 	self.gps_max = Vector2(map_long_max_e, map_lat_max_n)
-	
+
 	# Calculate node local x/y
 	var local_node_pos = {}
-	
+
 	for node_id in self.nodes:
 		var n = self.nodes[node_id]
-		var x = (n['lon'] - map_long_min_w) / (map_long_max_e - map_long_min_w)
-		var y = 1.0 - (n['lat'] - map_lat_min_s) / (map_lat_max_n - map_lat_min_s)
-		local_node_pos[node_id] = Vector2(x, y)
-	
+		var pos = Vector2(n['lon'], n['lat'])
+		pos -= self.gps_min
+		pos /= (self.gps_max - self.gps_min)
+		local_node_pos[node_id] = pos
+
 	# Calculate "out of bounds" area local x/y
-	var min_points = Vector2(
-		(requested_window['w'] - map_long_min_w) / (map_long_max_e - map_long_min_w), 
-		(requested_window['s'] - map_lat_min_s) / (map_lat_max_n - map_lat_min_s))
-	var max_points = Vector2(
-		(requested_window['e'] - map_long_min_w) / (map_long_max_e - map_long_min_w), 
-		(requested_window['n'] - map_lat_min_s) / (map_lat_max_n - map_lat_min_s))
-	
+	var min_points = (Vector2(requested_window['w'], requested_window['s']) - gps_min) / (gps_max - gps_min)
+	var max_points = (Vector2(requested_window['e'], requested_window['n']) - gps_min) / (gps_max - gps_min)
+
 	var oob_area = Polygon2D.new()
 	add_child(oob_area)
 	oob_area.set_name('out of bounds')
@@ -118,50 +122,50 @@ func createNewFromOpenMapsApi(map_data, requested_window):
 	oob_area.color.a = 0.25
 	var oob_points = PoolVector2Array()
 	# Inner window points
-	oob_points.append(Vector2(min_points.x, min_points.y) * scale)
-	oob_points.append(Vector2(max_points.x, min_points.y) * scale)
-	oob_points.append(Vector2(max_points.x, max_points.y) * scale)
-	oob_points.append(Vector2(min_points.x, max_points.y) * scale)
-	
+	oob_points.append(Vector2(min_points.x, min_points.y) * self.map_scale)
+	oob_points.append(Vector2(max_points.x, min_points.y) * self.map_scale)
+	oob_points.append(Vector2(max_points.x, max_points.y) * self.map_scale)
+	oob_points.append(Vector2(min_points.x, max_points.y) * self.map_scale)
+
 	# Back to top left corner
-	oob_points.append(Vector2(min_points.x, min_points.y) * scale)
-	
+	oob_points.append(Vector2(min_points.x, min_points.y) * self.map_scale)
+
 	# OOB window points, starting at top left corner
-	oob_points.append(Vector2(-oob_size, -oob_size) * scale)
-	oob_points.append(Vector2(-oob_size, max_points.y + oob_size) * scale)
-	oob_points.append(Vector2(max_points.x + oob_size, max_points.y + oob_size) * scale)
-	oob_points.append(Vector2(max_points.x + oob_size, -oob_size) * scale)
-	
+	oob_points.append(Vector2(-oob_size, -oob_size) * self.map_scale)
+	oob_points.append(Vector2(-oob_size, max_points.y + oob_size) * self.map_scale)
+	oob_points.append(Vector2(max_points.x + oob_size, max_points.y + oob_size) * self.map_scale)
+	oob_points.append(Vector2(max_points.x + oob_size, -oob_size) * self.map_scale)
+
 	# Back to top left corner, shape will auto-close and connect back to (0,0)
-	oob_points.append(Vector2(-oob_size, -oob_size) * scale)
+	oob_points.append(Vector2(-oob_size, -oob_size) * self.map_scale)
 	oob_area.polygon = oob_points
-	
+
 	# Add out of bounds line
 	var oob_line = AntialiasedLine2D.new()
 	add_child(oob_line)
 	oob_line.set_name('out of bounds line')
-	oob_line.z_index = 2
+	oob_line.z_index = 100
 	oob_line.default_color = Color.black
 	oob_line.default_color.a = 0.5
 	oob_line.joint_mode = Line2D.LINE_JOINT_BEVEL
-	
+
 	var oob_line_points = PoolVector2Array()
 	# To bevel all 4 corners, we have to start/end mid-line
-	oob_line_points.append(Vector2((min_points.x + max_points.x) / 2.0, min_points.y) * scale)
-	
-	oob_line_points.append(Vector2(max_points.x, min_points.y) * scale)
-	oob_line_points.append(Vector2(max_points.x, max_points.y) * scale)
-	oob_line_points.append(Vector2(min_points.x, max_points.y) * scale)
-	oob_line_points.append(Vector2(min_points.x, min_points.y) * scale)
-	
-	oob_line_points.append(Vector2((min_points.x + max_points.x) / 2.0, min_points.y) * scale)
+	oob_line_points.append(Vector2((min_points.x + max_points.x) / 2.0, min_points.y) * self.map_scale)
+
+	oob_line_points.append(Vector2(max_points.x, min_points.y) * self.map_scale)
+	oob_line_points.append(Vector2(max_points.x, max_points.y) * self.map_scale)
+	oob_line_points.append(Vector2(min_points.x, max_points.y) * self.map_scale)
+	oob_line_points.append(Vector2(min_points.x, min_points.y) * self.map_scale)
+
+	oob_line_points.append(Vector2((min_points.x + max_points.x) / 2.0, min_points.y) * self.map_scale)
 	oob_line.points = oob_line_points
-	
+
 	# Add lines
 	for way_id in self.ways:
 		var w = self.ways[way_id]
 		var node_ids = w['nodes']
-		
+
 		# Create line & stroke objects in the scene
 		var line = AntialiasedLine2D.new()
 		add_child(line)
@@ -172,7 +176,7 @@ func createNewFromOpenMapsApi(map_data, requested_window):
 		line.end_cap_mode = Line2D.LINE_CAP_ROUND
 		line.joint_mode = Line2D.LINE_JOINT_BEVEL
 		line.round_precision = 4
-		
+
 		var stroke = AntialiasedLine2D.new()
 		add_child(stroke)
 		stroke.set_name('way %d stroke' % way_id)
@@ -188,7 +192,7 @@ func createNewFromOpenMapsApi(map_data, requested_window):
 		var points = PoolVector2Array()
 		for node_id in node_ids:
 			var pos = local_node_pos[node_id]
-			points.push_back(pos * scale)
+			points.push_back(pos * self.map_scale)
 
 		line.points = points
 		stroke.points = points
@@ -196,8 +200,28 @@ func createNewFromOpenMapsApi(map_data, requested_window):
 #func add_many_traversed_paths(paths: [PoolVector2Array]): # GDScript 2.0,  Godot 4.0
 # Also probably not needed.
 
-func add_traversed_paths(paths: PoolVector2Array):
-	pass
+func add_traversed_segment(segment: PoolVector2Array):
+	self.traversed_segments.push_back(segment)
+	
+	var segment_root = Node.new()
+	segment_root.set_name('gpx segment %d' % self.traversed_segments.size())
+	self.add_child(segment_root)
+
+	for p in segment:
+		var polygon = AntialiasedRegularPolygon2D.new()
+		segment_root.add_child(polygon)
+		polygon.z_index = 1
+		polygon.size = Vector2(1.0, 1.0)
+		polygon.sides = 5
+		polygon.stroke_width = 0.2
+
+		# Calculate local x/y
+		var local_position = Vector2(p)
+		local_position -= self.gps_min
+		local_position /= (self.gps_max - self.gps_min)
+		local_position *= self.map_scale
+
+		polygon.translate(local_position)
 
 func _on_OpenMapsApi_on_map_data(result_object, requested_window):
 	self.createNewFromOpenMapsApi(result_object, requested_window)
