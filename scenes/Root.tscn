@@ -78,7 +78,7 @@ script = ExtResource( 8 )
 [node name="FileDialog" type="FileDialog" parent="UI_CanvasLayer/UI/TabContainer/GPX"]
 margin_right = 416.0
 margin_bottom = 194.0
-rect_min_size = Vector2( 400, 140 )
+rect_min_size = Vector2( 400, 280 )
 window_title = "Open File(s)"
 resizable = true
 dialog_hide_on_ok = true
