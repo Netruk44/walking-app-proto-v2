@@ -217,22 +217,38 @@ func add_traversed_segment(segment: PoolVector2Array):
 	self.add_child(segment_root)
 
 	for p in segment:
-		var polygon = AntialiasedRegularPolygon2D.new()
-		segment_root.add_child(polygon)
-		polygon.z_index = 1
-		polygon.size = Vector2(3.0, 3.0)
-		polygon.sides = 5
-		polygon.stroke_width = 0.0
-		polygon.visible = self.renderSegmentGpsPositions
-		polygon.color = Color.cornflower
-
 		# Calculate local x/y
 		var local_position = Vector2(p)
 		local_position -= self.gps_min
 		local_position /= (self.gps_max - self.gps_min)
 		local_position *= self.map_scale
 
-		polygon.translate(local_position)
+		# TODO Encapsulate in class
+		var traverse_point = Area2D.new()
+		traverse_point.translate(local_position)
+		traverse_point.collision_layer = 2 # 2 is the 'traversed_points' layer
+		traverse_point.collision_mask = 0 # Traverse points don't care about intersections
+		traverse_point.z_index = 1
+		traverse_point.visible = self.renderSegmentGpsPositions
+		segment_root.add_child(traverse_point)
+		var traverse_point_size: float = 5.0
+		
+		var polygon = AntialiasedRegularPolygon2D.new()
+		traverse_point.add_child(polygon)
+		#polygon.z_index = 1
+		polygon.size = Vector2(traverse_point_size, traverse_point_size)
+		polygon.sides = 5
+		polygon.stroke_width = 0.0
+		#polygon.visible = self.renderSegmentGpsPositions
+		polygon.color = Color.cornflower
+		polygon.color.a = 0.5
+
+		var collision = CollisionShape2D.new()
+		collision.shape = CircleShape2D.new()
+		collision.shape.radius = traverse_point_size
+		traverse_point.add_child(collision)
+
+		#polygon.translate(local_position)
 
 func _on_OpenMapsApi_on_map_data(result_object, requested_window):
 	self.createNewFromOpenMapsApi(result_object, requested_window)
