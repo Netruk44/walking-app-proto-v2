@@ -23,11 +23,23 @@ _global_script_classes=[ {
 "class": "AntialiasedRegularPolygon2D",
 "language": "GDScript",
 "path": "res://addons/antialiased_line2d/antialiased_regular_polygon2d.gd"
+}, {
+"base": "Area2D",
+"class": "MapSegment",
+"language": "GDScript",
+"path": "res://scripts/MapSegment.gd"
+}, {
+"base": "Node2D",
+"class": "MapWay",
+"language": "GDScript",
+"path": "res://scripts/MapWay.gd"
 } ]
 _global_script_class_icons={
 "AntialiasedLine2D": "res://addons/antialiased_line2d/antialiased_line2d.svg",
 "AntialiasedPolygon2D": "res://addons/antialiased_line2d/antialiased_polygon2d.svg",
-"AntialiasedRegularPolygon2D": "res://addons/antialiased_line2d/antialiased_regular_polygon2d.svg"
+"AntialiasedRegularPolygon2D": "res://addons/antialiased_line2d/antialiased_regular_polygon2d.svg",
+"MapSegment": "",
+"MapWay": ""
 }
 
 [application]
@@ -47,6 +59,11 @@ enabled=PoolStringArray( "res://addons/antialiased_line2d/plugin.cfg" )
 [gui]
 
 common/drop_mouse_on_gui_input_disabled=true
+
+[layer_names]
+
+2d_physics/layer_1="map_segments"
+2d_physics/layer_2="traversed_points"
 
 [physics]
 

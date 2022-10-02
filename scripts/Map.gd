@@ -18,7 +18,7 @@ export var renderSegmentGpsPositions = false setget setRenderSegmentGpsPositions
 
 # OpenMaps data
 var nodes = {} # id: int64 -> {"lat": float, "lon": float, "id": int64}
-var ways = {} # id: int64 -> {"nodes": list<int64>}
+var ways = {} # id: int64 -> {"nodes": list<int64>, "id": int64}
 
 var map_scale: Vector2
 var gps_min: Vector2
@@ -165,23 +165,29 @@ func createNewFromOpenMapsApi(map_data, requested_window):
 	oob_line.points = oob_line_points
 
 	# Add lines
+	var root_node = Node.new()
+	root_node.set_name('WayBackground')
+	self.add_child(root_node)
+
 	for way_id in self.ways:
 		var w = self.ways[way_id]
 		var node_ids = w['nodes']
 
 		# Create line & stroke objects in the scene
-		var line = AntialiasedLine2D.new()
-		add_child(line)
-		line.set_name('way %d' % way_id)
-		line.default_color = self.mapLineColor
-		line.width = self.mapLineWidth
-		line.begin_cap_mode = Line2D.LINE_CAP_ROUND
-		line.end_cap_mode = Line2D.LINE_CAP_ROUND
-		line.joint_mode = Line2D.LINE_JOINT_BEVEL
-		line.round_precision = 4
+		#var line = AntialiasedLine2D.new()
+		#add_child(line)
+		#line.set_name('way %d' % way_id)
+		#line.default_color = self.mapLineColor
+		#line.width = self.mapLineWidth
+		#line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+		#line.end_cap_mode = Line2D.LINE_CAP_ROUND
+		#line.joint_mode = Line2D.LINE_JOINT_BEVEL
+		#line.round_precision = 4
+		var new_way = MapWay.create_from_way(w, self.nodes, gps_min, gps_max, map_scale, self.mapLineWidth)
+		add_child(new_way)
 
 		var stroke = AntialiasedLine2D.new()
-		add_child(stroke)
+		root_node.add_child(stroke)
 		stroke.set_name('way %d stroke' % way_id)
 		stroke.z_index = -1
 		stroke.z_as_relative = true
@@ -197,7 +203,7 @@ func createNewFromOpenMapsApi(map_data, requested_window):
 			var pos = local_node_pos[node_id]
 			points.push_back(pos * self.map_scale)
 
-		line.points = points
+		#line.points = points
 		stroke.points = points
 
 #func add_many_traversed_paths(paths: [PoolVector2Array]): # GDScript 2.0,  Godot 4.0
