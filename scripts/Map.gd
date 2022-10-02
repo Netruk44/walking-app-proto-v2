@@ -231,7 +231,7 @@ func add_traversed_segment(segment: PoolVector2Array):
 		traverse_point.z_index = 1
 		traverse_point.visible = self.renderSegmentGpsPositions
 		segment_root.add_child(traverse_point)
-		var traverse_point_size: float = 5.0
+		var traverse_point_size: float = 8.0
 		
 		var polygon = AntialiasedRegularPolygon2D.new()
 		traverse_point.add_child(polygon)

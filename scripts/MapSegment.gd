@@ -14,6 +14,9 @@ export var map_segments_collision_mask: int = 2 # 2 is the 'traversed_points' la
 var segment_line: AntialiasedLine2D
 var collision_shape: CollisionShape2D
 
+var traversed_points_in_area: int = 0
+var points_needed_for_completion: int = 0
+
 func _ready():
 	# Set Area2D properties
 	self.collision_layer = self.map_segments_collision_layer
@@ -55,15 +58,32 @@ func update_collision_shape_points():
 	self.collision_shape.shape.a = self.segment_begin
 	self.collision_shape.shape.b = self.segment_end
 
-func update_segment_begin(new_val: Vector2):
-	segment_begin = new_val
+func refresh():
+	# TODO: This is implicitly based on screen size, since the map scale is
+	# based off that.
+	self.points_needed_for_completion = max(self.segment_begin.distance_to(self.segment_end), 1)
 	self.update_line_points()
 	self.update_collision_shape_points()
+
+func refresh_color():
+	var progress = float(min(self.traversed_points_in_area, self.points_needed_for_completion)) / float(self.points_needed_for_completion)
+	var color: Color = self.untraversed_color.linear_interpolate(self.traversed_color, progress)
+	self.segment_line.default_color = color
+
+func update_segment_begin(new_val: Vector2):
+	segment_begin = new_val
+	self.refresh()
 
 func update_segment_end(new_val: Vector2):
 	segment_end = new_val
-	self.update_line_points()
-	self.update_collision_shape_points()
+	self.refresh()
 
 func on_area_entered(other: Area2D):
-	self.segment_line.default_color = self.traversed_color
+	self.traversed_points_in_area += 1
+	#self.segment_line.default_color = self.traversed_color
+	other.connect("tree_exiting", self, "on_traverse_point_removed")
+	self.refresh_color()
+
+func on_traverse_point_removed():
+	self.traversed_points_in_area -= 1
+	self.refresh_color()
