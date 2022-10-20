@@ -16,10 +16,10 @@ static func create_from_way(
 	var way_nodes: Array = way['nodes']
 	
 	var prev_node = nodes[way_nodes[0]]
-	var prev_pos = ((node_to_vec(prev_node) - map_min) / (map_max - map_min)) * map_scale
+	var prev_pos = node_to_vec(prev_node)
 	for cur_node_id in way_nodes.slice(1, way_nodes.size() - 1):
 		var cur_node = nodes[cur_node_id]
-		var cur_pos = ((node_to_vec(cur_node) - map_min) / (map_max - map_min)) * map_scale
+		var cur_pos = node_to_vec(cur_node)
 
 		var segment = MapSegment.new()
 		segment.set_name('segment %d - %d' % [prev_node['id'], cur_node_id])

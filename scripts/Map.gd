@@ -11,7 +11,6 @@ export var mapLineColor = Color.orange
 export var mapStrokeColor = Color.black
 export var mapLineWidth = 3.5
 export var mapStrokeWidth = 1.0
-export var mapAspectRatio = 1.0
 export(ZoomType) var zoomToFit = ZoomType.Fit_Request # TODO: Remove
 export var oob_size = 5.0
 export var renderSegmentGpsPositions = false setget setRenderSegmentGpsPositions
@@ -80,24 +79,6 @@ func createNewFromOpenMapsApi(map_data, requested_window):
 	var map_lat_max_n = requested_window['n']
 	var map_long_min_w = requested_window['w']
 	var map_long_max_e = requested_window['e']
-
-	# Fix up the map aspect ratio if the requested area isn't correct
-	var coordinates_aspect_ratio = (map_long_max_e - map_long_min_w) / (map_lat_max_n - map_lat_min_s)
-	
-	if is_equal_approx(coordinates_aspect_ratio, mapAspectRatio):
-		pass
-	elif coordinates_aspect_ratio > mapAspectRatio:
-		# Add to latitude/horizontal
-		var lat_center = (map_lat_min_s + map_lat_max_n) / 2.0
-		var long_diff = (map_long_max_e - map_long_min_w) / 2.0
-		map_lat_max_n = lat_center + long_diff / mapAspectRatio
-		map_lat_min_s = lat_center - long_diff / mapAspectRatio
-	else:
-		# Add to longitude/vertical
-		var long_center = (map_long_min_w + map_long_max_e) / 2.0
-		var lat_diff = (map_lat_max_n - map_lat_min_s) / 2.0
-		map_long_max_e = long_center + lat_diff * mapAspectRatio
-		map_long_min_w = long_center - lat_diff * mapAspectRatio
 	
 	# Save min/max values
 	self.gps_min = Vector2(map_long_min_w, map_lat_min_s)
@@ -109,13 +90,7 @@ func createNewFromOpenMapsApi(map_data, requested_window):
 	for node_id in self.nodes:
 		var n = self.nodes[node_id]
 		var pos = Vector2(n['lon'], n['lat'])
-		pos -= self.gps_min
-		pos /= (self.gps_max - self.gps_min)
 		local_node_pos[node_id] = pos
-
-	# Calculate "out of bounds" area local x/y
-	var min_points = (Vector2(requested_window['w'], requested_window['s']) - gps_min) / (gps_max - gps_min)
-	var max_points = (Vector2(requested_window['e'], requested_window['n']) - gps_min) / (gps_max - gps_min)
 
 	var oob_area = Polygon2D.new()
 	add_child(oob_area)
@@ -125,19 +100,19 @@ func createNewFromOpenMapsApi(map_data, requested_window):
 	oob_area.color.a = 0.25
 	var oob_points = PoolVector2Array()
 	# Inner window points
-	oob_points.append(Vector2(min_points.x, min_points.y) * self.map_scale)
-	oob_points.append(Vector2(max_points.x, min_points.y) * self.map_scale)
-	oob_points.append(Vector2(max_points.x, max_points.y) * self.map_scale)
-	oob_points.append(Vector2(min_points.x, max_points.y) * self.map_scale)
+	oob_points.append(Vector2(self.gps_min.x, self.gps_min.y) * self.map_scale)
+	oob_points.append(Vector2(self.gps_max.x, self.gps_min.y) * self.map_scale)
+	oob_points.append(Vector2(self.gps_max.x, self.gps_max.y) * self.map_scale)
+	oob_points.append(Vector2(self.gps_min.x, self.gps_max.y) * self.map_scale)
 
 	# Back to top left corner
-	oob_points.append(Vector2(min_points.x, min_points.y) * self.map_scale)
+	oob_points.append(Vector2(self.gps_min.x, self.gps_min.y) * self.map_scale)
 
 	# OOB window points, starting at top left corner
 	oob_points.append(Vector2(-oob_size, -oob_size) * self.map_scale)
-	oob_points.append(Vector2(-oob_size, max_points.y + oob_size) * self.map_scale)
-	oob_points.append(Vector2(max_points.x + oob_size, max_points.y + oob_size) * self.map_scale)
-	oob_points.append(Vector2(max_points.x + oob_size, -oob_size) * self.map_scale)
+	oob_points.append(Vector2(-oob_size, self.gps_max.y + oob_size) * self.map_scale)
+	oob_points.append(Vector2(self.gps_max.x + oob_size, self.gps_max.y + oob_size) * self.map_scale)
+	oob_points.append(Vector2(self.gps_max.x + oob_size, -oob_size) * self.map_scale)
 
 	# Back to top left corner, shape will auto-close and connect back to (0,0)
 	oob_points.append(Vector2(-oob_size, -oob_size) * self.map_scale)
@@ -154,14 +129,14 @@ func createNewFromOpenMapsApi(map_data, requested_window):
 
 	var oob_line_points = PoolVector2Array()
 	# To bevel all 4 corners, we have to start/end mid-line
-	oob_line_points.append(Vector2((min_points.x + max_points.x) / 2.0, min_points.y) * self.map_scale)
+	oob_line_points.append(Vector2((self.gps_min.x + self.gps_max.x) / 2.0, self.gps_min.y) * self.map_scale)
 
-	oob_line_points.append(Vector2(max_points.x, min_points.y) * self.map_scale)
-	oob_line_points.append(Vector2(max_points.x, max_points.y) * self.map_scale)
-	oob_line_points.append(Vector2(min_points.x, max_points.y) * self.map_scale)
-	oob_line_points.append(Vector2(min_points.x, min_points.y) * self.map_scale)
+	oob_line_points.append(Vector2(self.gps_max.x, self.gps_min.y) * self.map_scale)
+	oob_line_points.append(Vector2(self.gps_max.x, self.gps_max.y) * self.map_scale)
+	oob_line_points.append(Vector2(self.gps_min.x, self.gps_max.y) * self.map_scale)
+	oob_line_points.append(Vector2(self.gps_min.x, self.gps_min.y) * self.map_scale)
 
-	oob_line_points.append(Vector2((min_points.x + max_points.x) / 2.0, min_points.y) * self.map_scale)
+	oob_line_points.append(Vector2((self.gps_min.x + self.gps_max.x) / 2.0, self.gps_min.y) * self.map_scale)
 	oob_line.points = oob_line_points
 
 	# Add lines

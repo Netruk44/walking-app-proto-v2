@@ -32,6 +32,16 @@ func _on_GPSCoordsPanel_generate_pressed(coords):
 func _on_OpenMapsApi_on_map_data(result_object, requested_window):
 	$UI_CanvasLayer/UI/TabContainer/GPS.showMessage("Successfully retrieved map!")
 	$Map.createNewFromOpenMapsApi(result_object, requested_window)
+	
+	# Move camera to the center of the requested area, and zoom to fit
+	var req_min = Vector2(requested_window['w'], requested_window['s'])
+	var req_max = Vector2(requested_window['e'], requested_window['n'])
+	var center = (req_min + req_max) / 2.0
+	$MapCamera.offset = center
+	
+	var req_diff = req_max - req_min
+	var viewport_size = get_viewport().size
+	$MapCamera.zoom = Vector2.ONE * (min(abs(req_diff.x), abs(req_diff.y)) / min(viewport_size.x, viewport_size.y))
 
 func _on_OpenMapsApi_on_map_error(response_code, body):
 	$UI_CanvasLayer/UI/TabContainer/GPS.showError("Request failed, status code %d." % response_code)
