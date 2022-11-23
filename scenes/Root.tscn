@@ -27,7 +27,7 @@ script = ExtResource( 2 )
 
 [node name="OpenMapsApi" type="Node" parent="Logic"]
 script = ExtResource( 3 )
-overpass_api_url = "http://overpass.danieltperry.me/api/interpreter"
+overpass_api_url = "https://overpass.kumi.systems/api/interpreter"
 
 [node name="HTTPRequest" type="HTTPRequest" parent="Logic/OpenMapsApi"]
 
@@ -41,8 +41,8 @@ script = ExtResource( 6 )
 [node name="Map" type="Node2D" parent="."]
 script = ExtResource( 5 )
 mapLineColor = Color( 0.905882, 0.309804, 0.309804, 1 )
-mapLineWidth = 0.001
-mapStrokeWidth = 0.01
+mapLineWidth = 0.01
+mapStrokeWidth = 1000.0
 
 [node name="UI_CanvasLayer" type="CanvasLayer" parent="."]
 layer = 10

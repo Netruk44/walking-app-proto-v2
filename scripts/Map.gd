@@ -58,8 +58,8 @@ func createNewFromOpenMapsApi(map_data, requested_window):
 	self.map_scale = Vector2(min_side, min_side)
 	
 	# Raw GPS coordinates need to be scaled if they're appearing on a map
-	# or else the aspect ratio looks wrong due to the fact that 1 degree latitude
-	# is not the same distance as 1 degree longitude.
+	# or else the aspect ratio looks wrong due to the fact that 1 degree horizontal
+	# is not the same distance as 1/2 degree vertical.
 	map_scale *= Vector2(1.0/1.25, 1.0) # Experimentally arrived at, probably not correct
 
 	# GPS is y+ upward | Godot is y+ downward

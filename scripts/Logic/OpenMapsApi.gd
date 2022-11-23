@@ -6,6 +6,7 @@ signal on_map_data
 signal on_map_error
 
 export var overpass_api_url = "https://overpass-api.de/api/interpreter"
+export var prescale = 100.0
 var request_running = false
 var request_coords = null
 
@@ -64,6 +65,18 @@ func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 	if json_parse_result.error != OK:
 		self.on_error("Error parsing JSON response from OpenMaps: %s" % json_parse_result.error_string)
 	else:
-		emit_signal("on_map_data", json_parse_result.result, self.request_coords)
+		# Do prescaling of points
+		var json_result = json_parse_result.result
+		for e in json_result['elements']:
+			if e.has('lat'):
+				e['lat'] *= self.prescale
+			if e.has('lon'):
+				e['lon'] *= self.prescale
+		
+		# Prescale request coords
+		for k in self.request_coords:
+			self.request_coords[k] *= self.prescale
+		
+		emit_signal("on_map_data", json_result, self.request_coords)
 	
 	self.request_coords = null
