@@ -27,7 +27,6 @@ script = ExtResource( 2 )
 
 [node name="OpenMapsApi" type="Node" parent="Logic"]
 script = ExtResource( 3 )
-overpass_api_url = "http://overpass.danieltperry.me/api/interpreter"
 
 [node name="HTTPRequest" type="HTTPRequest" parent="Logic/OpenMapsApi"]
 

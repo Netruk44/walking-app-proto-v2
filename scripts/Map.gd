@@ -233,7 +233,7 @@ func add_traversed_segment(segment: PoolVector2Array):
 		segment_root.add_child(traverse_point)
 		var traverse_point_size: float = 8.0
 		
-		""" TODO: Implement some limiting mechanism for these points. Too many and we crash.
+		""" TODO: Implement some limiting mechanism for these points. Too many and we crash."""
 		var polygon = AntialiasedRegularPolygon2D.new()
 		traverse_point.add_child(polygon)
 		#polygon.z_index = 1
@@ -243,7 +243,7 @@ func add_traversed_segment(segment: PoolVector2Array):
 		#polygon.visible = self.renderSegmentGpsPositions
 		polygon.color = Color.cornflower
 		polygon.color.a = 0.5
-		"""
+		#"""
 
 		var collision = CollisionShape2D.new()
 		collision.shape = CircleShape2D.new()
